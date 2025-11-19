@@ -1,0 +1,12 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+QuantResearch/__init__.py
+QuantResearch/indicators.py
+QuantResearch/visualize.py
+QuantResearch.egg-info/PKG-INFO
+QuantResearch.egg-info/SOURCES.txt
+QuantResearch.egg-info/dependency_links.txt
+QuantResearch.egg-info/requires.txt
+QuantResearch.egg-info/top_level.txt
