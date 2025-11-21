@@ -23,5 +23,4 @@ setup(
         "yfinance>=0.2.0",
         "pandas>=1.3.0",
         "matplotlib>=3.4.0",
-    ],
-)
+    ],)

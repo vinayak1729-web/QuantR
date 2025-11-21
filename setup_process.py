@@ -1,13 +1,8 @@
-#!/usr/bin/env python3
-"""
-Automated PyPI Package Upload Script
-Usage: python upload_to_pypi.py
-"""
-
 import os
 import sys
 import subprocess
 import shutil
+import glob
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -178,18 +173,39 @@ def check_package():
     """Check package with twine"""
     print_step("Checking package")
     
-    result = run_command("twine check dist/*")
+    # Use glob to get dist files instead of shell wildcard
+    dist_files = glob.glob("dist/*")
     
-    if result and result.returncode == 0:
-        print_success("Package checks passed")
-        return True
-    else:
-        print_error("Package check failed")
+    if not dist_files:
+        print_error("No distribution files found in dist/")
         return False
+    
+    for file in dist_files:
+        result = run_command(f"twine check {file}")
+        if not result or result.returncode != 0:
+            print_error(f"Package check failed for {file}")
+            return False
+    
+    print_success("Package checks passed")
+    return True
+
+def get_dist_files():
+    """Get list of distribution files"""
+    dist_files = glob.glob("dist/*")
+    
+    if not dist_files:
+        print_error("No distribution files found in dist/")
+        return None
+    
+    return dist_files
 
 def upload_to_pypi():
     """Upload package to PyPI"""
     print_step("Uploading to PyPI")
+    
+    dist_files = get_dist_files()
+    if not dist_files:
+        return False
     
     # Ask for confirmation
     response = input(f"\n{Colors.YELLOW}Ready to upload to PyPI. Continue? (y/n): {Colors.END}")
@@ -198,14 +214,41 @@ def upload_to_pypi():
         print_warning("Upload cancelled by user")
         return False
     
-    result = run_command("twine upload dist/*")
+    pypi_token = os.getenv('PYPI_TOKEN')
     
-    if result and result.returncode == 0:
-        print_success("Package uploaded successfully!")
-        print(f"\n{Colors.GREEN}🎉 Your package is now live on PyPI!{Colors.END}")
-        return True
-    else:
-        print_error("Upload failed")
+    # Build command with explicit file list using subprocess for security
+    files_str = ' '.join([f'"{file}"' for file in dist_files])
+    
+    try:
+        # Use subprocess.run with env to avoid exposing token
+        env = os.environ.copy()
+        
+        # Run twine upload using environment variables for authentication
+        result = subprocess.run(
+            f'twine upload {files_str}',
+            shell=True,
+            capture_output=True,
+            text=True,
+            env={**env, 'TWINE_USERNAME': '__token__', 'TWINE_PASSWORD': pypi_token}
+        )
+        
+        if result.returncode == 0:
+            print_success("Package uploaded successfully!")
+            print(f"\n{Colors.GREEN}🎉 Your package is now live on PyPI!{Colors.END}")
+            return True
+        else:
+            print_error("Upload failed")
+            print(f"Error: {result.stderr}")
+            
+            # Check for common errors
+            if "401" in result.stderr or "Unauthorized" in result.stderr:
+                print_error("Authentication failed. Check your PYPI_TOKEN.")
+            elif "already exists" in result.stderr:
+                print_error("This version already exists on PyPI. Update the version in pyproject.toml")
+            
+            return False
+    except Exception as e:
+        print_error(f"Upload error: {e}")
         return False
 
 def upload_to_test_pypi():
@@ -223,17 +266,33 @@ def upload_to_test_pypi():
     if response.lower() != 'y':
         return True
     
-    result = run_command(
-        f"twine upload --repository testpypi dist/* -u __token__ -p {test_token}"
-    )
+    dist_files = get_dist_files()
+    if not dist_files:
+        return False
     
-    if result and result.returncode == 0:
-        print_success("Package uploaded to TestPyPI successfully!")
-        print("\nTest installation with:")
-        print(f"  pip install --index-url https://test.pypi.org/simple/ QuantResearch")
-        return True
-    else:
-        print_error("TestPyPI upload failed")
+    files_str = ' '.join([f'"{file}"' for file in dist_files])
+    
+    try:
+        env = os.environ.copy()
+        result = subprocess.run(
+            f'twine upload --repository testpypi {files_str}',
+            shell=True,
+            capture_output=True,
+            text=True,
+            env={**env, 'TWINE_USERNAME': '__token__', 'TWINE_PASSWORD': test_token}
+        )
+        
+        if result.returncode == 0:
+            print_success("Package uploaded to TestPyPI successfully!")
+            print("\nTest installation with:")
+            print(f"  pip install --index-url https://test.pypi.org/simple/ QuantResearch")
+            return True
+        else:
+            print_error("TestPyPI upload failed")
+            print(f"Error: {result.stderr}")
+            return False
+    except Exception as e:
+        print_error(f"Upload error: {e}")
         return False
 
 def main():

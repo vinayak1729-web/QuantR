@@ -1,4 +1,5 @@
 import yfinance as yf
+import pandas as pd
 def fetch_data(ticker,start_date,end_date):
     return yf.download(tickers=ticker,start=start_date,end=end_date,auto_adjust=False)
 
@@ -26,6 +27,16 @@ def macd(price,short_period=12,long_period=26,signal_period=9):
     histogram =macd_line-signalLine
     return macd_line , signalLine , histogram
 
+def atr(data,period=14):
+    high = data['High']
+    low  = data['Low']
+    close = data['Close']
+    tr1 = high -low #daily true range
+    tr2 =abs(high-close.shift()) # Gap up from previous close and .shift() moves the entire column down by 1 row.
+    tr3 = abs(low-close.shift()) #  Gap down from previous close
+    tr = pd.concat([tr1,tr2,tr3],axis=1).max(axis=1)
+    return (tr.rolling(window=period).mean())
+
 def sma(price,period=9):
     return price.rolling(window =period).mean()
 
@@ -46,3 +57,10 @@ def temma(price,period =9):
     Eema2=Eema1.ewm(span=period,adjust = False).mean()
     temma = 3*ema -(3*Eema1)+Eema2
     return temma
+
+def RVWAP(high,low,close,volume, period=20):
+    tp = (high +low + close) / 3
+    tpv = tp * volume
+    rolling_tpv = tpv.rolling(window=period).sum()
+    rolling_volume = volume.rolling(window=period).sum()
+    return rolling_tpv / rolling_volume

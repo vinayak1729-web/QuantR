@@ -1,506 +1,476 @@
-# QuantResearch 📈
+# QuantResearch
 
-**Technical indicators and visualization tools for quantitative research and algorithmic trading.**
+A comprehensive Python library for quantitative financial analysis and technical indicator calculation. QuantResearch provides easy-to-use functions for fetching market data, calculating technical indicators, and visualizing trading signals.
 
-[![PyPI version](https://badge.fury.io/py/QuantResearch.svg)](https://badge.fury.io/py/QuantResearch)
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Table of Contents
 
----
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [API Reference](#api-reference)
+  - [Data Fetching](#data-fetching)
+  - [Technical Indicators](#technical-indicators)
+  - [Visualization](#visualization)
+- [Examples](#examples)
+- [Requirements](#requirements)
+- [License](#license)
 
-## 🚀 Installation
+## Installation
+
+Install QuantResearch using pip:
 
 ```bash
 pip install QuantResearch
 ```
 
----
+## Quick Start
 
-## 📊 Features
-
-- **Fetch stock data** from Yahoo Finance
-- **Technical Indicators**: RSI, MACD, Bollinger Bands, SMA, EMA, DEMA, TEMA
-- **Beautiful Visualizations**: Ready-to-use plotting functions
-- **Easy to Use**: Simple, intuitive API
-- **Lightweight**: Minimal dependencies
-
----
-
-## 🎯 Quick Start
+Here's a simple example to get started:
 
 ```python
-from QuantResearch import fetch_data, Rsi, plot_rsi
+from QuantResearch import indicators, visualize
+import pandas as pd
 
 # Fetch stock data
-data = fetch_data('AAPL', '2024-01-01', '2024-11-01')
+ticker = "AAPL"
+data = indicators.fetch_data(ticker, start_date="2023-01-01", end_date="2024-01-01")
 
 # Calculate RSI
-rsi = Rsi(data['Close'], period=14)
+rsi = indicators.Rsi(data['Close'], period=14)
 
-# Visualize
-plot_rsi(rsi, ticker='AAPL')
+# Plot RSI
+visualize.plot_rsi(rsi, period=14, ticker=ticker)
 ```
 
----
+## Features
 
-## 📚 Complete Function Reference
+QuantResearch includes a comprehensive suite of tools for quantitative analysis:
 
-### 1. Data Fetching
+- **Data Fetching**: Download historical OHLCV data from Yahoo Finance
+- **Technical Indicators**: RSI, MACD, Bollinger Bands, ATR, SMA, EMA, DEMA, TEMA, RVWAP
+- **Visualization**: Professional charts for price action, indicators, and trading signals
+- **Signal Generation**: Identify buy/sell crossover points automatically
+
+## API Reference
+
+### Data Fetching
 
 #### `fetch_data(ticker, start_date, end_date)`
 
-Fetch historical stock data from Yahoo Finance.
+Downloads historical OHLCV (Open, High, Low, Close, Volume) data for a given ticker.
 
 **Parameters:**
-- `ticker` (str): Stock ticker symbol (e.g., 'AAPL', 'GOOGL', 'TSLA')
-- `start_date` (str): Start date in 'YYYY-MM-DD' format
-- `end_date` (str): End date in 'YYYY-MM-DD' format
+- `ticker` (str): Stock ticker symbol (e.g., "AAPL", "MSFT")
+- `start_date` (str): Start date in format "YYYY-MM-DD"
+- `end_date` (str): End date in format "YYYY-MM-DD"
 
-**Returns:** pandas DataFrame with OHLCV data
+**Returns:**
+- pandas.DataFrame: Contains columns for Open, High, Low, Close, Adj Close, Volume
 
 **Example:**
 ```python
-from QuantResearch import fetch_data
-
-# Fetch Apple stock data
-data = fetch_data('AAPL', '2023-01-01', '2024-01-01')
+data = indicators.fetch_data("AAPL", "2023-01-01", "2024-01-01")
 print(data.head())
 ```
 
 ---
 
-### 2. Technical Indicators
+### Technical Indicators
 
 #### `Rsi(price, period=14)`
 
-Calculate Relative Strength Index (RSI).
+Calculates the Relative Strength Index (RSI), a momentum oscillator measuring the magnitude of recent price changes.
 
 **Parameters:**
-- `price` (pandas Series): Price data (typically closing prices)
-- `period` (int, default=14): Number of periods for RSI calculation
+- `price` (pandas.Series): Price series (typically closing prices)
+- `period` (int): Lookback period, default is 14
 
-**Returns:** pandas Series with RSI values (0-100)
+**Returns:**
+- pandas.Series: RSI values (0-100)
+
+**Interpretation:**
+- RSI > 70: Potentially overbought
+- RSI < 30: Potentially oversold
+- RSI 30-70: Neutral zone
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, Rsi
-
-data = fetch_data('MSFT', '2024-01-01', '2024-11-01')
-rsi = Rsi(data['Close'], period=14)
-
-print(f"Current RSI: {rsi.iloc[-1]:.2f}")
+rsi = indicators.Rsi(data['Close'], period=14)
 ```
-
-**Interpretation:**
-- RSI > 70: Overbought (potential sell signal)
-- RSI < 30: Oversold (potential buy signal)
 
 ---
 
 #### `bb_bands(price, period=20, num_std=2)`
 
-Calculate Bollinger Bands.
+Calculates Bollinger Bands, consisting of a moving average and upper/lower bands based on standard deviation.
 
 **Parameters:**
-- `price` (pandas Series): Price data
-- `period` (int, default=20): Moving average period
-- `num_std` (int, default=2): Number of standard deviations
+- `price` (pandas.Series): Price series (typically closing prices)
+- `period` (int): Lookback period, default is 20
+- `num_std` (int or float): Number of standard deviations, default is 2
 
-**Returns:** Tuple of (upper_band, middle_band, lower_band)
-
-**Example:**
-```python
-from QuantResearch import fetch_data, bb_bands
-
-data = fetch_data('TSLA', '2024-01-01', '2024-11-01')
-upper, middle, lower = bb_bands(data['Close'], period=20, num_std=2)
-
-print(f"Upper Band: {upper.iloc[-1]:.2f}")
-print(f"Middle Band: {middle.iloc[-1]:.2f}")
-print(f"Lower Band: {lower.iloc[-1]:.2f}")
-```
+**Returns:**
+- Tuple of three pandas.Series: (upper_band, middle_band, lower_band)
 
 **Interpretation:**
 - Price near upper band: Potentially overbought
 - Price near lower band: Potentially oversold
-- Band squeeze: Low volatility, potential breakout coming
+- Bands widen during volatility, contract during calm periods
+
+**Example:**
+```python
+upper, mid, lower = indicators.bb_bands(data['Close'], period=20, num_std=2)
+```
 
 ---
 
 #### `macd(price, short_period=12, long_period=26, signal_period=9)`
 
-Calculate Moving Average Convergence Divergence (MACD).
+Calculates MACD (Moving Average Convergence Divergence), a trend-following momentum indicator.
 
 **Parameters:**
-- `price` (pandas Series): Price data
-- `short_period` (int, default=12): Short EMA period
-- `long_period` (int, default=26): Long EMA period
-- `signal_period` (int, default=9): Signal line period
+- `price` (pandas.Series): Price series
+- `short_period` (int): Short EMA period, default is 12
+- `long_period` (int): Long EMA period, default is 26
+- `signal_period` (int): Signal line EMA period, default is 9
 
-**Returns:** Tuple of (macd_line, signal_line, histogram)
+**Returns:**
+- Tuple of three pandas.Series: (macd_line, signal_line, histogram)
+
+**Interpretation:**
+- MACD crosses above signal line: Bullish signal
+- MACD crosses below signal line: Bearish signal
+- Histogram divergence: Potential trend reversal
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, macd
-
-data = fetch_data('GOOGL', '2024-01-01', '2024-11-01')
-macd_line, signal_line, histogram = macd(data['Close'])
-
-print(f"MACD: {macd_line.iloc[-1]:.2f}")
-print(f"Signal: {signal_line.iloc[-1]:.2f}")
-print(f"Histogram: {histogram.iloc[-1]:.2f}")
+macd_line, signal_line, histogram = indicators.macd(data['Close'])
 ```
 
+---
+
+#### `atr(data, period=14)`
+
+Calculates Average True Range (ATR), a volatility indicator measuring the average price movement range.
+
+**Parameters:**
+- `data` (pandas.DataFrame): OHLC data with 'High', 'Low', 'Close' columns
+- `period` (int): Lookback period, default is 14
+
+**Returns:**
+- pandas.Series: ATR values
+
 **Interpretation:**
-- MACD crosses above signal: Bullish (buy signal)
-- MACD crosses below signal: Bearish (sell signal)
-- Positive histogram: Bullish momentum
-- Negative histogram: Bearish momentum
+- Higher ATR: Higher volatility
+- Lower ATR: Lower volatility
+- Useful for setting stop-loss and take-profit levels
+
+**Example:**
+```python
+atr_values = indicators.atr(data, period=14)
+```
 
 ---
 
 #### `sma(price, period=9)`
 
-Calculate Simple Moving Average.
+Calculates Simple Moving Average (SMA), the average price over a specified period.
 
 **Parameters:**
-- `price` (pandas Series): Price data
-- `period` (int, default=9): Number of periods
+- `price` (pandas.Series): Price series
+- `period` (int): Lookback period, default is 9
 
-**Returns:** pandas Series with SMA values
+**Returns:**
+- pandas.Series: SMA values
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, sma
-
-data = fetch_data('AAPL', '2024-01-01', '2024-11-01')
-sma_20 = sma(data['Close'], period=20)
-sma_50 = sma(data['Close'], period=50)
-
-# Golden cross detection
-if sma_20.iloc[-1] > sma_50.iloc[-1]:
-    print("Golden Cross: Bullish signal!")
+sma_9 = indicators.sma(data['Close'], period=9)
+sma_20 = indicators.sma(data['Close'], period=20)
 ```
 
 ---
 
 #### `ema(price, period=9)`
 
-Calculate Exponential Moving Average.
+Calculates Exponential Moving Average (EMA), which gives more weight to recent prices.
 
 **Parameters:**
-- `price` (pandas Series): Price data
-- `period` (int, default=9): Number of periods
+- `price` (pandas.Series): Price series
+- `period` (int): Lookback period, default is 9
 
-**Returns:** pandas Series with EMA values
+**Returns:**
+- pandas.Series: EMA values
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, ema
-
-data = fetch_data('NVDA', '2024-01-01', '2024-11-01')
-ema_12 = ema(data['Close'], period=12)
-ema_26 = ema(data['Close'], period=26)
-
-print(f"EMA(12): {ema_12.iloc[-1]:.2f}")
-print(f"EMA(26): {ema_26.iloc[-1]:.2f}")
+ema_9 = indicators.ema(data['Close'], period=9)
 ```
 
 ---
 
 #### `demma(price, period=9)`
 
-Calculate Double Exponential Moving Average (DEMA).
+Calculates Double Exponential Moving Average (DEMA), a smoother trend indicator that reduces lag.
 
 **Parameters:**
-- `price` (pandas Series): Price data
-- `period` (int, default=9): Number of periods
+- `price` (pandas.Series): Price series
+- `period` (int): Lookback period, default is 9
 
-**Returns:** pandas Series with DEMA values
+**Returns:**
+- pandas.Series: DEMA values
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, demma
-
-data = fetch_data('AMZN', '2024-01-01', '2024-11-01')
-dema = demma(data['Close'], period=20)
-print(f"DEMA: {dema.iloc[-1]:.2f}")
+dema_9 = indicators.demma(data['Close'], period=9)
 ```
-
-**Note:** DEMA reacts faster to price changes than regular EMA.
 
 ---
 
 #### `temma(price, period=9)`
 
-Calculate Triple Exponential Moving Average (TEMA).
+Calculates Triple Exponential Moving Average (TEMA), providing even smoother trend tracking with minimal lag.
 
 **Parameters:**
-- `price` (pandas Series): Price data
-- `period` (int, default=9): Number of periods
+- `price` (pandas.Series): Price series
+- `period` (int): Lookback period, default is 9
 
-**Returns:** pandas Series with TEMA values
+**Returns:**
+- pandas.Series: TEMA values
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, temma
-
-data = fetch_data('META', '2024-01-01', '2024-11-01')
-tema = temma(data['Close'], period=20)
-print(f"TEMA: {tema.iloc[-1]:.2f}")
+tema_9 = indicators.temma(data['Close'], period=9)
 ```
-
-**Note:** TEMA is even more responsive than DEMA, with less lag.
 
 ---
 
-### 3. Visualization Functions
+#### `RVWAP(high, low, close, volume, period=20)`
+
+Calculates Volume-Weighted Average Price (VWAP), a trading benchmark that reflects both price and volume.
+
+**Parameters:**
+- `high` (pandas.Series): High prices
+- `low` (pandas.Series): Low prices
+- `close` (pandas.Series): Close prices
+- `volume` (pandas.Series): Trading volume
+- `period` (int): Lookback period, default is 20
+
+**Returns:**
+- pandas.Series: VWAP values
+
+**Interpretation:**
+- Price above VWAP: Bullish bias
+- Price below VWAP: Bearish bias
+
+**Example:**
+```python
+vwap = indicators.RVWAP(data['High'], data['Low'], data['Close'], data['Volume'], period=20)
+```
+
+---
+
+### Visualization
+
+#### `show_macd(macdline, signalLine, hist, ticker)`
+
+Displays MACD, signal line, and histogram.
+
+**Parameters:**
+- `macdline` (pandas.Series): MACD line values
+- `signalLine` (pandas.Series): Signal line values
+- `hist` (pandas.Series): Histogram values
+- `ticker` (str): Stock ticker for title
+
+**Example:**
+```python
+visualize.show_macd(macd_line, signal_line, histogram, "AAPL")
+```
+
+---
+
+#### `plot_bollinger(ajd_close, bb_upper, bb_mid, bb_lower, ticker=None)`
+
+Visualizes Bollinger Bands with price action.
+
+**Parameters:**
+- `ajd_close` (pandas.Series): Adjusted close prices
+- `bb_upper` (pandas.Series): Upper Bollinger Band
+- `bb_mid` (pandas.Series): Middle Bollinger Band
+- `bb_lower` (pandas.Series): Lower Bollinger Band
+- `ticker` (str, optional): Stock ticker for title
+
+**Example:**
+```python
+upper, mid, lower = indicators.bb_bands(data['Close'])
+visualize.plot_bollinger(data['Adj Close'], upper, mid, lower, ticker="AAPL")
+```
+
+---
 
 #### `plot_rsi(rsi, period=14, lower=30, upper=70, ticker=None)`
 
-Plot RSI with overbought/oversold levels.
+Displays RSI with overbought/oversold levels.
 
 **Parameters:**
-- `rsi` (pandas Series): RSI values
-- `period` (int, default=14): RSI period (for title)
-- `lower` (int, default=30): Oversold threshold
-- `upper` (int, default=70): Overbought threshold
-- `ticker` (str, optional): Ticker symbol for title
+- `rsi` (pandas.Series): RSI values
+- `period` (int): RSI period for labeling, default is 14
+- `lower` (int): Oversold threshold, default is 30
+- `upper` (int): Overbought threshold, default is 70
+- `ticker` (str, optional): Stock ticker for title
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, Rsi, plot_rsi
-
-data = fetch_data('AAPL', '2024-01-01', '2024-11-01')
-rsi = Rsi(data['Close'])
-plot_rsi(rsi, ticker='AAPL', lower=30, upper=70)
+rsi = indicators.Rsi(data['Close'])
+visualize.plot_rsi(rsi, period=14, ticker="AAPL")
 ```
 
 ---
 
-#### `plot_bollinger(adj_close, bb_upper, bb_mid, bb_lower, ticker=None)`
+#### `plot_moving_averages(price, sma_val, ema_val, dema_val, tema_val, title="Moving Averages Comparison")`
 
-Plot price with Bollinger Bands.
+Compares multiple moving average types on the same chart.
 
 **Parameters:**
-- `adj_close` (pandas Series): Adjusted close prices
-- `bb_upper` (pandas Series): Upper Bollinger Band
-- `bb_mid` (pandas Series): Middle band (moving average)
-- `bb_lower` (pandas Series): Lower Bollinger Band
-- `ticker` (str, optional): Ticker symbol for title
+- `price` (pandas.Series): Price series
+- `sma_val` (pandas.Series): Simple Moving Average
+- `ema_val` (pandas.Series): Exponential Moving Average
+- `dema_val` (pandas.Series): Double Exponential Moving Average
+- `tema_val` (pandas.Series): Triple Exponential Moving Average
+- `title` (str, optional): Chart title
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, bb_bands, plot_bollinger
+sma = indicators.sma(data['Close'], period=9)
+ema = indicators.ema(data['Close'], period=9)
+dema = indicators.demma(data['Close'], period=9)
+tema = indicators.temma(data['Close'], period=9)
 
-data = fetch_data('TSLA', '2024-01-01', '2024-11-01')
-upper, middle, lower = bb_bands(data['Close'], period=20)
-plot_bollinger(data['Adj Close'], upper, middle, lower, ticker='TSLA')
+visualize.plot_moving_averages(data['Close'], sma, ema, dema, tema, title="AAPL Moving Averages")
 ```
 
 ---
 
-#### `show_macd(macd_line, signal_line, histogram, ticker)`
+#### `plot_crossovers(price, ma1, ma2, ma1_label='MA1', ma2_label='MA2')`
 
-Plot MACD, signal line, and histogram.
+Visualizes moving average crossovers with automatic buy/sell signal detection.
 
 **Parameters:**
-- `macd_line` (pandas Series): MACD line values
-- `signal_line` (pandas Series): Signal line values
-- `histogram` (pandas Series): MACD histogram
-- `ticker` (str): Ticker symbol for title
+- `price` (pandas.Series): Price series
+- `ma1` (pandas.Series): First moving average
+- `ma2` (pandas.Series): Second moving average
+- `ma1_label` (str): Label for first MA, default is 'MA1'
+- `ma2_label` (str): Label for second MA, default is 'MA2'
+
+**Returns:**
+- Displays chart with green triangles (buy signals) and red triangles (sell signals)
 
 **Example:**
 ```python
-from QuantResearch import fetch_data, macd, show_macd
+sma_fast = indicators.sma(data['Close'], period=9)
+sma_slow = indicators.sma(data['Close'], period=21)
 
-data = fetch_data('GOOGL', '2024-01-01', '2024-11-01')
-macd_line, signal_line, hist = macd(data['Close'])
-show_macd(macd_line, signal_line, hist, 'GOOGL')
+visualize.plot_crossovers(data['Close'], sma_fast, sma_slow, 
+                         ma1_label='SMA 9', ma2_label='SMA 21')
 ```
 
 ---
 
-## 🔥 Complete Examples
+## Examples
 
-### Example 1: Multi-Indicator Analysis
+### Example 1: Complete Technical Analysis
 
 ```python
-from QuantResearch import (
-    fetch_data, Rsi, macd, bb_bands,
-    plot_rsi, show_macd, plot_bollinger
-)
+from QuantResearch import indicators, visualize
 
 # Fetch data
-ticker = 'AAPL'
-data = fetch_data(ticker, '2024-01-01', '2024-11-01')
+data = indicators.fetch_data("AAPL", "2023-01-01", "2024-01-01")
 
 # Calculate indicators
-rsi = Rsi(data['Close'], period=14)
-macd_line, signal_line, hist = macd(data['Close'])
-upper, middle, lower = bb_bands(data['Close'], period=20)
+rsi = indicators.Rsi(data['Close'], period=14)
+macd_line, signal_line, histogram = indicators.macd(data['Close'])
+upper, mid, lower = indicators.bb_bands(data['Close'])
+sma_9 = indicators.sma(data['Close'], period=9)
+sma_21 = indicators.sma(data['Close'], period=21)
 
-# Visualize all indicators
-plot_rsi(rsi, ticker=ticker)
-show_macd(macd_line, signal_line, hist, ticker)
-plot_bollinger(data['Adj Close'], upper, middle, lower, ticker=ticker)
+# Visualize
+visualize.plot_rsi(rsi, ticker="AAPL")
+visualize.show_macd(macd_line, signal_line, histogram, "AAPL")
+visualize.plot_bollinger(data['Adj Close'], upper, mid, lower, ticker="AAPL")
+visualize.plot_crossovers(data['Close'], sma_9, sma_21, "SMA 9", "SMA 21")
 ```
 
----
-
-### Example 2: Simple Trading Strategy
+### Example 2: Moving Average Strategy
 
 ```python
-from QuantResearch import fetch_data, Rsi, macd
+from QuantResearch import indicators, visualize
 
-# Fetch data
-data = fetch_data('MSFT', '2024-01-01', '2024-11-01')
+data = indicators.fetch_data("MSFT", "2023-06-01", "2024-06-01")
 
-# Calculate indicators
-rsi = Rsi(data['Close'])
-macd_line, signal_line, _ = macd(data['Close'])
+# Compare different moving averages
+sma = indicators.sma(data['Close'], period=20)
+ema = indicators.ema(data['Close'], period=20)
+dema = indicators.demma(data['Close'], period=20)
+tema = indicators.temma(data['Close'], period=20)
 
-# Get latest values
-current_rsi = rsi.iloc[-1]
-current_macd = macd_line.iloc[-1]
-current_signal = signal_line.iloc[-1]
-
-# Simple strategy
-if current_rsi < 30 and current_macd > current_signal:
-    print("🟢 BUY SIGNAL: RSI oversold + MACD bullish crossover")
-elif current_rsi > 70 and current_macd < current_signal:
-    print("🔴 SELL SIGNAL: RSI overbought + MACD bearish crossover")
-else:
-    print("⚪ HOLD: No clear signal")
+visualize.plot_moving_averages(data['Close'], sma, ema, dema, tema, 
+                               title="MSFT Moving Averages Comparison")
 ```
 
----
-
-### Example 3: Multiple Stocks Comparison
+### Example 3: Volatility Analysis
 
 ```python
-from QuantResearch import fetch_data, Rsi
-import pandas as pd
+from QuantResearch import indicators
 
-tickers = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA']
-results = {}
+data = indicators.fetch_data("TSLA", "2024-01-01", "2024-11-01")
 
-for ticker in tickers:
-    data = fetch_data(ticker, '2024-01-01', '2024-11-01')
-    rsi = Rsi(data['Close'])
-    results[ticker] = rsi.iloc[-1]
+# Calculate volatility metrics
+atr_values = indicators.atr(data, period=14)
+upper, mid, lower = indicators.bb_bands(data['Close'], period=20, num_std=2)
 
-# Display results
-print("\n📊 Current RSI Values:")
-print("-" * 30)
-for ticker, rsi_value in sorted(results.items(), key=lambda x: x[1]):
-    status = "🔴 Overbought" if rsi_value > 70 else "🟢 Oversold" if rsi_value < 30 else "⚪ Neutral"
-    print(f"{ticker:6s}: {rsi_value:6.2f} {status}")
+print("ATR (Last 10 days):")
+print(atr_values.tail(10))
 ```
 
 ---
 
-### Example 4: Moving Average Strategy
+## Requirements
 
-```python
-from QuantResearch import fetch_data, sma, ema
-import matplotlib.pyplot as plt
+QuantResearch requires the following dependencies:
 
-# Fetch data
-data = fetch_data('AAPL', '2024-01-01', '2024-11-01')
+- Python >= 3.7
+- pandas >= 1.0.0
+- yfinance >= 0.1.68
+- matplotlib >= 3.0.0
 
-# Calculate multiple moving averages
-sma_20 = sma(data['Close'], period=20)
-sma_50 = sma(data['Close'], period=50)
-ema_12 = ema(data['Close'], period=12)
-
-# Plot
-plt.figure(figsize=(12, 6))
-plt.plot(data['Close'], label='Close Price', linewidth=2)
-plt.plot(sma_20, label='SMA(20)', linestyle='--')
-plt.plot(sma_50, label='SMA(50)', linestyle='--')
-plt.plot(ema_12, label='EMA(12)', linestyle='-.')
-plt.title('AAPL - Moving Averages')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
-```
+These will be installed automatically when you install QuantResearch via pip.
 
 ---
 
-## 🎓 Understanding the Indicators
+## License
 
-### RSI (Relative Strength Index)
-- **Range**: 0-100
-- **Overbought**: > 70
-- **Oversold**: < 30
-- **Best for**: Identifying reversal points
-
-### MACD (Moving Average Convergence Divergence)
-- **Bullish**: MACD crosses above signal line
-- **Bearish**: MACD crosses below signal line
-- **Best for**: Trend following and momentum
-
-### Bollinger Bands
-- **Upper Band**: Price resistance level
-- **Lower Band**: Price support level
-- **Best for**: Volatility and breakout trading
-
-### Moving Averages (SMA, EMA, DEMA, TEMA)
-- **SMA**: Simple average, smooth but slow
-- **EMA**: Exponential, more responsive
-- **DEMA**: Double exponential, even faster
-- **TEMA**: Triple exponential, fastest response
+QuantResearch is released under the MIT License. See LICENSE file for details.
 
 ---
 
-## 📦 Dependencies
+## Support & Contributing
 
-- `yfinance` >= 0.2.0
-- `pandas` >= 1.3.0
-- `matplotlib` >= 3.4.0
+For issues, feature requests, or contributions, please visit the project repository.
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+For bug reports or questions, please contact the development team.
 
 ---
 
-## 📝 License
+## Disclaimer
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-## 👨‍💻 Author
-
-**Vinayak Shinde**
-- Email: vinayak.r.shinde.1729@gmail.com
-- GitHub: [@vinayak1729-web](https://github.com/vinayak1729-web)
+QuantResearch is provided for educational and research purposes only. It is not intended as financial advice. Always consult with a financial advisor before making investment decisions. Past performance is not indicative of future results.
 
 ---
 
-## ⭐ Support
+## Changelog
 
-If you find this project helpful, please give it a star ⭐ on GitHub!
-
----
-
-## 📊 Version History
-
-- **0.0.1** (2024-11-19): Initial release
-  - Basic technical indicators (RSI, MACD, Bollinger Bands)
-  - Moving averages (SMA, EMA, DEMA, TEMA)
-  - Visualization functions
-  - Data fetching from Yahoo Finance
-
----
+### Version 1.0.0
+- Initial release
+- Core technical indicators (RSI, MACD, Bollinger Bands, ATR, SMA, EMA, DEMA, TEMA, VWAP)
+- Visualization functions for all indicators
+- Data fetching from Yahoo Finance
