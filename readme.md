@@ -485,6 +485,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 **Vinayak Shinde**
 - Email: vinayak.r.shinde.1729@gmail.com
+- Email: vishal214.mishra@gmail.com
 - GitHub: [@vinayak1729-web](https://github.com/vinayak1729-web)
 
 ---
