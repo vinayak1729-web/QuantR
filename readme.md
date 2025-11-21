@@ -618,6 +618,7 @@ These will be installed automatically when you install QuantResearch via pip.
 
 - **Vishal Mishra**
   - Email: vishal214.mishra@gmail.com
+  - GitHub: (https://github.com/vishalmishra369)
   - Role: Co-Developer
 
 ### Contributing
