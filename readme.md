@@ -59,17 +59,17 @@ pip install -e .
 Here's a simple example to get started in 5 minutes:
 
 ```python
-from QuantResearch import indicators, visualize
+from QuantResearch import fetch_data, Rsi, plot_rsi
 
 # Step 1: Fetch stock data
 ticker = "AAPL"
-data = indicators.fetch_data(ticker, start_date="2023-01-01", end_date="2024-01-01")
+data = fetch_data(ticker, start_date="2023-01-01", end_date="2024-01-01")
 
 # Step 2: Calculate RSI
-rsi = indicators.Rsi(data['Close'], period=14)
+rsi = Rsi(data['Close'], period=14)
 
 # Step 3: Visualize
-visualize.plot_rsi(rsi, period=14, ticker=ticker)
+plot_rsi(rsi, period=14, ticker=ticker)
 ```
 
 Run this and you'll see a beautiful RSI chart with overbought/oversold levels!
@@ -94,7 +94,7 @@ Downloads historical OHLCV (Open, High, Low, Close, Volume, Adjusted Close) data
 
 **Example:**
 ```python
-data = indicators.fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
 print(data.head())
 print(f"Shape: {data.shape}")
 ```
@@ -131,7 +131,7 @@ RSI < 30  → Oversold (potential buy signal)
 
 **Example:**
 ```python
-rsi = indicators.Rsi(data['Close'], period=14)
+rsi = Rsi(data['Close'], period=14)
 print(f"Current RSI: {rsi.iloc[-1]:.2f}")
 
 # Find overbought conditions
@@ -162,8 +162,8 @@ Band width change      → Indicates volatility changes
 
 **Example:**
 ```python
-upper, mid, lower = indicators.bb_bands(data['Close'], period=20, num_std=2)
-visualize.plot_bollinger(data['Adj Close'], upper, mid, lower, ticker="AAPL")
+upper, mid, lower = bb_bands(data['Close'], period=20, num_std=2)
+plot_bollinger(data['Adj Close'], upper, mid, lower, ticker="AAPL")
 
 # Check for breakouts
 breakout_up = data['Close'] > upper
@@ -493,25 +493,26 @@ visualize.plot_crossovers(data['Close'], sma_fast, sma_slow,
 ### Example 1: Complete Technical Analysis Dashboard
 
 ```python
-from QuantResearch import indicators, visualize
+from QuantResearch import (fetch_data, Rsi, macd, bb_bands, atr, 
+                           sma, plot_rsi, show_macd, plot_bollinger, plot_crossovers)
 
 # Fetch data for analysis
 ticker = "AAPL"
-data = indicators.fetch_data(ticker, "2023-06-01", "2024-06-01")
+data = fetch_data(ticker, "2023-06-01", "2024-06-01")
 
 # Calculate all indicators
-rsi = indicators.Rsi(data['Close'], period=14)
-macd_line, signal_line, histogram = indicators.macd(data['Close'])
-upper, mid, lower = indicators.bb_bands(data['Close'])
-atr_val = indicators.atr(data, period=14)
-sma_9 = indicators.sma(data['Close'], period=9)
-sma_21 = indicators.sma(data['Close'], period=21)
+rsi = Rsi(data['Close'], period=14)
+macd_line, signal_line, histogram = macd(data['Close'])
+upper, mid, lower = bb_bands(data['Close'])
+atr_val = atr(data, period=14)
+sma_9 = sma(data['Close'], period=9)
+sma_21 = sma(data['Close'], period=21)
 
 # Display all charts
-visualize.plot_rsi(rsi, ticker=ticker)
-visualize.show_macd(macd_line, signal_line, histogram, ticker)
-visualize.plot_bollinger(data['Adj Close'], upper, mid, lower, ticker=ticker)
-visualize.plot_crossovers(data['Close'], sma_9, sma_21, "SMA 9", "SMA 21")
+plot_rsi(rsi, ticker=ticker)
+show_macd(macd_line, signal_line, histogram, ticker)
+plot_bollinger(data['Adj Close'], upper, mid, lower, ticker=ticker)
+plot_crossovers(data['Close'], sma_9, sma_21, "SMA 9", "SMA 21")
 
 print(f"Current RSI: {rsi.iloc[-1]:.2f}")
 print(f"Current ATR: {atr_val.iloc[-1]:.2f}")
@@ -522,13 +523,13 @@ print(f"Current ATR: {atr_val.iloc[-1]:.2f}")
 ### Example 2: Moving Average Crossover Strategy
 
 ```python
-from QuantResearch import indicators, visualize
+from QuantResearch import fetch_data, ema, plot_crossovers
 
-data = indicators.fetch_data("MSFT", "2023-01-01", "2024-01-01")
+data = fetch_data("MSFT", "2023-01-01", "2024-01-01")
 
 # Fast and slow moving averages
-fast_ma = indicators.ema(data['Close'], period=9)
-slow_ma = indicators.ema(data['Close'], period=21)
+fast_ma = ema(data['Close'], period=9)
+slow_ma = ema(data['Close'], period=21)
 
 # Detect signals
 buy_signal = (fast_ma > slow_ma) & (fast_ma.shift(1) <= slow_ma.shift(1))
@@ -538,7 +539,7 @@ print(f"Total Buy Signals: {buy_signal.sum()}")
 print(f"Total Sell Signals: {sell_signal.sum()}")
 
 # Visualize
-visualize.plot_crossovers(data['Close'], fast_ma, slow_ma, "EMA 9", "EMA 21")
+plot_crossovers(data['Close'], fast_ma, slow_ma, "EMA 9", "EMA 21")
 ```
 
 ---
@@ -546,14 +547,13 @@ visualize.plot_crossovers(data['Close'], fast_ma, slow_ma, "EMA 9", "EMA 21")
 ### Example 3: Volatility Analysis
 
 ```python
-from QuantResearch import indicators
-import pandas as pd
+from QuantResearch import fetch_data, atr, bb_bands
 
-data = indicators.fetch_data("TSLA", "2024-01-01", "2024-11-01")
+data = fetch_data("TSLA", "2024-01-01", "2024-11-01")
 
 # Calculate volatility metrics
-atr_14 = indicators.atr(data, period=14)
-bb_upper, bb_mid, bb_lower = indicators.bb_bands(data['Close'], period=20)
+atr_14 = atr(data, period=14)
+bb_upper, bb_mid, bb_lower = bb_bands(data['Close'], period=20)
 
 # Volatility analysis
 band_width = (bb_upper - bb_lower) / bb_mid
@@ -572,12 +572,12 @@ print(f"\nHigh Volatility Days: {len(high_vol_days)}")
 ### Example 4: RSI-Based Trading Signals
 
 ```python
-from QuantResearch import indicators, visualize
+from QuantResearch import fetch_data, Rsi, plot_rsi
 
-data = indicators.fetch_data("GOOGL", "2023-01-01", "2024-01-01")
+data = fetch_data("GOOGL", "2023-01-01", "2024-01-01")
 
 # Calculate RSI
-rsi = indicators.Rsi(data['Close'], period=14)
+rsi = Rsi(data['Close'], period=14)
 
 # Generate signals
 oversold = rsi < 30  # Potential buy
@@ -587,7 +587,7 @@ neutral = (rsi >= 30) & (rsi <= 70)
 print(f"Oversold signals: {oversold.sum()}")
 print(f"Overbought signals: {overbought.sum()}")
 
-visualize.plot_rsi(rsi, period=14, lower=30, upper=70, ticker="GOOGL")
+plot_rsi(rsi, period=14, lower=30, upper=70, ticker="GOOGL")
 ```
 
 ---
@@ -656,7 +656,7 @@ For issues, questions, or feature requests:
 
 ## 📊 What's New
 
-### Version 0.0.2 (Latest)
+### Version 1.0.0 (Latest)
 - ✅ Core technical indicators (RSI, MACD, Bollinger Bands, ATR, SMA, EMA, DEMA, TEMA, VWAP)
 - ✅ Professional visualization functions
 - ✅ Data fetching from Yahoo Finance

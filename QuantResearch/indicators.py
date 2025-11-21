@@ -64,3 +64,4 @@ def RVWAP(high,low,close,volume, period=20):
     rolling_tpv = tpv.rolling(window=period).sum()
     rolling_volume = volume.rolling(window=period).sum()
     return rolling_tpv / rolling_volume
+
