@@ -657,7 +657,7 @@ For issues, questions, or feature requests:
 
 ## 📊 What's New
 
-### Version 1.0.0 (Latest)
+### Version 0.0.2 (Latest)
 - ✅ Core technical indicators (RSI, MACD, Bollinger Bands, ATR, SMA, EMA, DEMA, TEMA, VWAP)
 - ✅ Professional visualization functions
 - ✅ Data fetching from Yahoo Finance
