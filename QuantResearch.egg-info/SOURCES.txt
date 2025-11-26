@@ -3,6 +3,7 @@ README.md
 pyproject.toml
 setup.py
 QuantResearch/__init__.py
+QuantResearch/dashboard.py
 QuantResearch/indicators.py
 QuantResearch/visualize.py
 QuantResearch.egg-info/PKG-INFO
