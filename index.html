@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantResearch - Professional Technical Analysis Library</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f4f4f4;
+            --text-primary: #2c3e50;
+            --text-secondary: #5a6c7d;
+            --border-color: #e1e8ed;
+            --accent-primary: #3498db;
+            --accent-secondary: #2ecc71;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --sidebar-width: 280px;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f3460;
+            --text-primary: #eee;
+            --text-secondary: #b4b4b4;
+            --border-color: #2c3e50;
+            --accent-primary: #4a90e2;
+            --accent-secondary: #27ae60;
+            --shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .theme-toggle, .mobile-menu-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .theme-toggle:hover, .mobile-menu-btn:hover {
+            transform: scale(1.05);
+            background: var(--accent-secondary);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        .layout {
+            display: flex;
+            margin-top: 70px;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            left: 0;
+            top: 70px;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 2rem 0;
+            transition: transform 0.3s;
+            z-index: 999;
+        }
+
+        .sidebar-content {
+            padding: 0 1.5rem;
+        }
+
+        .sidebar h3 {
+            color: var(--accent-primary);
+            margin: 1.5rem 0 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin: 0.3rem 0;
+        }
+
+        .sidebar a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: var(--accent-primary);
+            color: white;
+            padding-left: 1.2rem;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+            scroll-margin-top: 90px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+            border-bottom: 2px solid var(--accent-primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .subsection-title {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: var(--accent-secondary);
+        }
+
+        .code-block {
+            background: var(--bg-code);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .code-block pre {
+            margin: 0;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .image-container {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .image-caption {
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .install-box {
+            background: var(--accent-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .install-box h2 {
+            margin-bottom: 1rem;
+        }
+
+        .install-box code {
+            background: rgba(0,0,0,0.2);
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .feature-card h3 {
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-primary);
+            margin: 1.5rem 0;
+        }
+
+        .warning-box {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            margin: 1.5rem 0;
+        }
+
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .api-table th,
+        .api-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .api-table th {
+            background: var(--accent-primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .api-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .authors {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .author-card {
+            text-align: center;
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .author-card h4 {
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            :root {
+                --sidebar-width: 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .nav-content {
+                justify-content: center;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">
+                📊 QuantResearch
+            </div>
+            <div class="nav-actions">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰ Menu</button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <h3>Getting Started</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#quick-start">Quick Start</a></li>
+                    <li><a href="#features">Features</a></li>
+                </ul>
+
+                <h3>Data Fetching</h3>
+                <ul>
+                    <li><a href="#fetch-data">fetch_data()</a></li>
+                </ul>
+
+                <h3>Indicators</h3>
+                <ul>
+                    <li><a href="#rsi">RSI</a></li>
+                    <li><a href="#macd">MACD</a></li>
+                    <li><a href="#bollinger">Bollinger Bands</a></li>
+                    <li><a href="#atr">ATR</a></li>
+                    <li><a href="#sma">SMA</a></li>
+                    <li><a href="#ema">EMA</a></li>
+                    <li><a href="#dema-tema">DEMA & TEMA</a></li>
+                    <li><a href="#rvwap">RVWAP</a></li>
+                </ul>
+
+                <h3>Visualizations</h3>
+                <ul>
+                    <li><a href="#plot-candlestick">Candlestick Chart</a></li>
+                    <li><a href="#plot-rsi">RSI Plot</a></li>
+                    <li><a href="#plot-macd">MACD Plot</a></li>
+                    <li><a href="#plot-bollinger">Bollinger Plot</a></li>
+                    <li><a href="#plot-moving-avg">Moving Averages</a></li>
+                </ul>
+
+                <h3>Dashboard</h3>
+                <ul>
+                    <li><a href="#dashboard">Interactive Dashboard</a></li>
+                </ul>
+
+                <h3>More</h3>
+                <ul>
+                    <li><a href="#requirements">Requirements</a></li>
+                    <li><a href="#authors">Authors</a></li>
+                    <li><a href="#disclaimer">Disclaimer</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="container">
+                <section id="home" class="section">
+                    <div class="hero">
+                        <h1>QuantResearch</h1>
+                        <p>Professional Python library for quantitative financial analysis, technical indicators, and advanced trading visualization</p>
+                        <div class="badges">
+                            <span class="badge">Python 3.7+</span>
+                            <span class="badge">MIT License</span>
+                            <span class="badge">PyPI Available</span>
+                            <span class="badge">Production Ready</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="installation" class="section">
+                    <h2 class="section-title">📦 Installation</h2>
+                    <div class="install-box">
+                        <h2>Quick Installation</h2>
+                        <code>pip install QuantResearch</code>
+                    </div>
+                </section>
+
+                <section id="quick-start" class="section">
+                    <h2 class="section-title">🚀 Quick Start</h2>
+                    <p>Get started in less than 5 minutes with this simple example:</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, Rsi, plot_rsi
+
+# Step 1: Fetch stock data
+ticker = "AAPL"
+data = fetch_data(ticker, start_date="2023-01-01", end_date="2024-01-01")
+
+# Step 2: Calculate RSI
+rsi = Rsi(data['Close'], period=14)
+
+# Step 3: Visualize with candlestick chart
+plot_rsi(data=data, rsi=rsi, period=14, ticker=ticker, kind='candle')</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/rsi_candle.png" alt="RSI with Candlestick Chart">
+                        <p class="image-caption">RSI indicator displayed with candlestick price chart showing overbought/oversold levels</p>
+                    </div>
+                </section>
+
+                <section id="features" class="section">
+                    <h2 class="section-title">✨ Key Features</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">📈</div>
+                            <h3>Technical Indicators</h3>
+                            <p>RSI, MACD, Bollinger Bands, ATR, SMA, EMA, DEMA, TEMA, and RVWAP</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🕯️</div>
+                            <h3>Candlestick Charts</h3>
+                            <p>Professional candlestick visualizations with customizable styling</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📊</div>
+                            <h3>Data Fetching</h3>
+                            <p>Seamless Yahoo Finance integration for historical data</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🎨</div>
+                            <h3>Beautiful Visualizations</h3>
+                            <p>Dual-pane charts combining price action with indicators</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">⚡</div>
+                            <h3>Simple API</h3>
+                            <p>Intuitive functions for beginners and professionals</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔧</div>
+                            <h3>Highly Customizable</h3>
+                            <p>Adjust periods, thresholds, and visualization styles</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="fetch-data" class="section">
+                    <h2 class="section-title">📥 Data Fetching</h2>
+                    
+                    <h3 class="subsection-title">fetch_data(ticker, start_date, end_date)</h3>
+                    <p>Downloads historical OHLCV data from Yahoo Finance.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data
+
+ticker = "AAPL"
+data = fetch_data(ticker, "2023-01-01", "2024-01-01")
+print(data.head())</pre>
+                    </div>
+
+                    <table class="api-table">
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td>ticker</td>
+                            <td>str</td>
+                            <td>Stock ticker symbol (e.g., "AAPL", "MSFT")</td>
+                        </tr>
+                        <tr>
+                            <td>start_date</td>
+                            <td>str</td>
+                            <td>Start date in "YYYY-MM-DD" format</td>
+                        </tr>
+                        <tr>
+                            <td>end_date</td>
+                            <td>str</td>
+                            <td>End date in "YYYY-MM-DD" format</td>
+                        </tr>
+                    </table>
+
+                    <div class="image-container">
+                        <img src="static/fetch_data.png" alt="Fetch Data Output">
+                        <p class="image-caption">Sample output of fetch_data() showing OHLCV data structure</p>
+                    </div>
+                </section>
+
+                <section id="rsi" class="section">
+                    <h2 class="section-title">📊 RSI - Relative Strength Index</h2>
+                    
+                    <h3 class="subsection-title">Rsi(price, period=14)</h3>
+                    <p>Momentum oscillator measuring the magnitude of recent price changes.</p>
+                    
+                    <div class="info-box">
+                        <strong>Interpretation:</strong>
+                        <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                            <li>RSI > 70 → Overbought (potential sell signal)</li>
+                            <li>RSI < 30 → Oversold (potential buy signal)</li>
+                            <li>30-70 → Neutral zone</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, Rsi
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data['rsi'] = Rsi(data['Close'], period=14)
+
+# Generate signals
+oversold = data['rsi'] < 30  # Buy signal
+overbought = data['rsi'] > 70  # Sell signal
+
+print(f"Current RSI: {data['rsi'].iloc[-1]:.2f}")
+print(f"Buy signals: {oversold.sum()}")
+print(f"Sell signals: {overbought.sum()}")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/rsi_signals.png" alt="RSI Signals">
+                        <p class="image-caption">RSI indicator showing buy and sell signals</p>
+                    </div>
+                </section>
+
+                <section id="macd" class="section">
+                    <h2 class="section-title">📈 MACD - Moving Average Convergence Divergence</h2>
+                    
+                    <h3 class="subsection-title">macd(price, short_period=12, long_period=26, signal_period=9)</h3>
+                    <p>Trend-following momentum indicator that shows the relationship between two moving averages.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, macd
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+macd_line, signal_line, hist = macd(data['Adj Close'])
+
+# Detect crossovers
+bullish = (macd_line > signal_line) & (macd_line.shift(1) <= signal_line.shift(1))
+bearish = (macd_line < signal_line) & (macd_line.shift(1) >= signal_line.shift(1))
+
+print(f"Bullish signals: {bullish.sum()}")
+print(f"Bearish signals: {bearish.sum()}")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/macd.png" alt="MACD Indicator">
+                        <p class="image-caption">MACD with signal line and histogram showing trend strength</p>
+                    </div>
+                </section>
+
+                <section id="bollinger" class="section">
+                    <h2 class="section-title">📉 Bollinger Bands</h2>
+                    
+                    <h3 class="subsection-title">bb_bands(price, period=20, num_std=2)</h3>
+                    <p>Volatility bands placed above and below a moving average. Useful for identifying overbought/oversold conditions.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, bb_bands
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+upper, mid, lower = bb_bands(data['Adj Close'], period=20, num_std=2)
+
+data['bb_upper'] = upper
+data['bb_mid'] = mid
+data['bb_lower'] = lower
+
+# Calculate band width for squeeze detection
+band_width = (upper - lower) / mid
+squeeze = band_width < band_width.quantile(0.25)
+print(f"Squeeze periods detected: {squeeze.sum()}")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/bb_bands.png" alt="Bollinger Bands">
+                        <p class="image-caption">Bollinger Bands showing volatility zones around price movement</p>
+                    </div>
+                </section>
+
+                <section id="atr" class="section">
+                    <h2 class="section-title">📏 ATR - Average True Range</h2>
+                    
+                    <h3 class="subsection-title">atr(data, period=14)</h3>
+                    <p>Volatility indicator that measures the average range of price movement.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, atr
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data['atr'] = atr(data, period=14)
+
+print(f"Average ATR: {data['atr'].mean():.2f}")
+print(f"Current ATR: {data['atr'].iloc[-1]:.2f}")
+
+# Plot ATR
+data['atr'].plot(title=f'ATR for AAPL')</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/atr.png" alt="ATR Indicator">
+                        <p class="image-caption">Average True Range showing market volatility over time</p>
+                    </div>
+                </section>
+
+                <section id="sma" class="section">
+                    <h2 class="section-title">📊 SMA - Simple Moving Average</h2>
+                    
+                    <h3 class="subsection-title">sma(price, period=9)</h3>
+                    <p>Average price over a specified period, useful for identifying trend direction.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, sma
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data['sma_20'] = sma(data['Adj Close'], period=20)
+data['sma_50'] = sma(data['Adj Close'], period=50)
+
+# Golden Cross detection
+golden_cross = (data['sma_20'] > data['sma_50']) & (data['sma_20'].shift(1) <= data['sma_50'].shift(1))
+print(f"Golden Cross signals: {golden_cross.sum()}")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/sma.png" alt="SMA">
+                        <p class="image-caption">Simple Moving Average overlaid on candlestick chart</p>
+                    </div>
+                </section>
+
+                <section id="ema" class="section">
+                    <h2 class="section-title">📈 EMA - Exponential Moving Average</h2>
+                    
+                    <h3 class="subsection-title">ema(price, period=9)</h3>
+                    <p>Weighted average giving more importance to recent prices, more responsive than SMA.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, ema
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data['ema_12'] = ema(data['Adj Close'], period=12)
+data['ema_26'] = ema(data['Adj Close'], period=26)
+
+print(f"Current EMA 12: {data['ema_12'].iloc[-1]:.2f}")
+print(f"Current EMA 26: {data['ema_26'].iloc[-1]:.2f}")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/ema.png" alt="EMA">
+                        <p class="image-caption">Exponential Moving Average showing trend with less lag</p>
+                    </div>
+                </section>
+
+                <section id="dema-tema" class="section">
+                    <h2 class="section-title">📊 DEMA & TEMA</h2>
+                    
+                    <h3 class="subsection-title">demma(price, period=9) & temma(price, period=9)</h3>
+                    <p><strong>DEMA:</strong> Double Exponential Moving Average - smoother with reduced lag<br>
+                    <strong>TEMA:</strong> Triple Exponential Moving Average - smoothest with minimal lag</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, demma, temma
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data['dema'] = demma(data['Adj Close'], period=20)
+data['tema'] = temma(data['Adj Close'], period=20)
+
+print("Advanced moving averages calculated successfully!")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/demma&temma.png" alt="DEMA & TEMA">
+                        <p class="image-caption">DEMA and TEMA comparison showing reduced lag in trend following</p>
+                    </div>
+                </section>
+
+                <section id="rvwap" class="section">
+                    <h2 class="section-title">💹 RVWAP - Rolling Volume-Weighted Average Price</h2>
+                    
+                    <h3 class="subsection-title">RVWAP(high, low, close, volume, period=20)</h3>
+                    <p>Price benchmark that reflects both volume and price data, useful for institutional trading levels.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, RVWAP
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data['rvwap'] = RVWAP(data['High'], data['Low'], data['Close'], 
+                      data['Volume'], period=20)
+
+print(f"Current RVWAP: {data['rvwap'].iloc[-1]:.2f}")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/rvwap.png" alt="RVWAP">
+                        <p class="image-caption">Rolling VWAP showing volume-weighted price levels</p>
+                    </div>
+                </section>
+
+                <section id="plot-candlestick" class="section">
+                    <h2 class="section-title">🕯️ Candlestick Chart Visualization</h2>
+                    
+                    <h3 class="subsection-title">plot_candlestick(data, ticker='Stock')</h3>
+                    <p>Creates professional candlestick charts showing OHLC price action.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, plot_candlestick
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+plot_candlestick(data, ticker="AAPL")</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/plot_candle_stick.png" alt="Candlestick Chart">
+                        <p class="image-caption">Clean candlestick chart showing price action with green (bullish) and red (bearish) candles</p>
+                    </div>
+                </section>
+
+                <section id="plot-rsi" class="section">
+                    <h2 class="section-title">📊 RSI Visualization</h2>
+                    
+                    <h3 class="subsection-title">plot_rsi(data, rsi, period=14, ticker, kind='line')</h3>
+                    <p>Visualize RSI with optional candlestick chart. Supports both line and candle chart types.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, Rsi, plot_rsi
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+rsi = Rsi(data['Close'], period=14)
+
+# Line chart
+plot_rsi(rsi=rsi, period=14, ticker="AAPL", kind='line')
+
+# Candlestick chart with RSI
+plot_rsi(data=data, rsi=rsi, period=14, ticker="AAPL", kind='candle')</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/rsi_line.png" alt="RSI Line Chart">
+                        <p class="image-caption">RSI line chart with overbought (70) and oversold (30) levels highlighted</p>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/rsi_candle.png" alt="RSI Candlestick Chart">
+                        <p class="image-caption">Dual-pane view: Candlestick price chart above with RSI indicator below</p>
+                    </div>
+                </section>
+
+                <section id="plot-macd" class="section">
+                    <h2 class="section-title">📈 MACD Visualization</h2>
+                    
+                    <h3 class="subsection-title">plot_macd(macd_line, signal_line, histogram, ticker, data, kind='line')</h3>
+                    <p>Display MACD indicator with signal line and histogram, optionally with price chart.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, macd, plot_macd
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+macd_line, signal_line, hist = macd(data['Adj Close'])
+
+# Candlestick chart with MACD
+plot_macd(macd_line, signal_line, hist, ticker="AAPL", 
+          data=data, kind='candle')</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/macd.png" alt="MACD">
+                        <p class="image-caption">MACD with price action: Blue MACD line, orange signal line, and histogram showing momentum</p>
+                    </div>
+                </section>
+
+                <section id="plot-bollinger" class="section">
+                    <h2 class="section-title">📉 Bollinger Bands Visualization</h2>
+                    
+                    <h3 class="subsection-title">plot_bollinger(data, adj_close, bb_upper, bb_mid, bb_lower, ticker, kind='line')</h3>
+                    <p>Visualize Bollinger Bands with price, showing volatility zones.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, bb_bands, plot_bollinger
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+upper, mid, lower = bb_bands(data['Adj Close'], period=20)
+
+# Line chart
+plot_bollinger(adj_close=data['Adj Close'], bb_upper=upper, 
+               bb_mid=mid, bb_lower=lower, ticker="AAPL")
+
+# Candlestick chart
+plot_bollinger(data=data, adj_close=data['Adj Close'], 
+               bb_upper=upper, bb_mid=mid, bb_lower=lower, 
+               ticker="AAPL", kind='candle')</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/bb_bands_line_plot.png" alt="Bollinger Bands Line">
+                        <p class="image-caption">Bollinger Bands line chart with shaded volatility zone</p>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/bb_bands_candle_plot.png" alt="Bollinger Bands Candlestick">
+                        <p class="image-caption">Bollinger Bands on candlestick chart showing price touching bands</p>
+                    </div>
+                </section>
+
+                <section id="plot-moving-avg" class="section">
+                    <h2 class="section-title">📊 Moving Averages Visualization</h2>
+                    
+                    <h3 class="subsection-title">plot_moving_averages(data, price, sma_val, ema_val, dema_val, tema_val, ticker, kind='line')</h3>
+                    <p>Compare multiple moving averages on a single chart.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch import fetch_data, sma, ema, demma, temma
+from QuantResearch import plot_moving_averages
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+data['sma'] = sma(data['Adj Close'], period=20)
+data['ema'] = ema(data['Adj Close'], period=20)
+data['dema'] = demma(data['Adj Close'], period=20)
+data['tema'] = temma(data['Adj Close'], period=20)
+
+# Candlestick with all moving averages
+plot_moving_averages(data=data, sma_val=data['sma'], 
+                     ema_val=data['ema'], dema_val=data['dema'],
+                     tema_val=data['tema'], ticker="AAPL", kind='candle')</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/all_ma.png" alt="Moving Averages">
+                        <p class="image-caption">Multiple moving averages (SMA, EMA, DEMA, TEMA) compared on candlestick chart</p>
+                    </div>
+                </section>
+
+                <section id="dashboard" class="section">
+                    <h2 class="section-title">🎛️ Interactive Dashboard</h2>
+                    
+                    <h3 class="subsection-title">launch_dashboard()</h3>
+                    <p>Launch an interactive dashboard with all indicators and real-time analysis tools.</p>
+                    
+                    <div class="code-block">
+                        <pre>from QuantResearch.dashboard import launch_dashboard
+
+# Launch the interactive dashboard
+launch_dashboard()</pre>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/dashboard_1.png" alt="Dashboard 1">
+                        <p class="image-caption">Dashboard interface - Main view with ticker input and date selection</p>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/dashboard_2.png" alt="Dashboard 2">
+                        <p class="image-caption">Dashboard - Indicator selection panel</p>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/dashboard_with_ma_lines.png" alt="Dashboard MA">
+                        <p class="image-caption">Dashboard displaying multiple moving average lines on price chart</p>
+                    </div>
+
+                    <div class="image-container">
+                        <img src="static/complete_dashbord_wilth_all_indicators.png" alt="Complete Dashboard">
+                        <p class="image-caption">Complete dashboard view with all technical indicators displayed simultaneously</p>
+                    </div>
+                </section>
+
+                <section id="requirements" class="section">
+                    <h2 class="section-title">📋 Requirements</h2>
+                    <table class="api-table">
+                        <tr>
+                            <th>Package</th>
+                            <th>Version</th>
+                            <th>Purpose</th>
+                        </tr>
+                        <tr>
+                            <td>Python</td>
+                            <td>>= 3.7</td>
+                            <td>Runtime environment</td>
+                        </tr>
+                        <tr>
+                            <td>pandas</td>
+                            <td>>= 1.3.0</td>
+                            <td>Data manipulation and analysis</td>
+                        </tr>
+                        <tr>
+                            <td>yfinance</td>
+                            <td>>= 0.2.0</td>
+                            <td>Financial data retrieval from Yahoo Finance</td>
+                        </tr>
+                        <tr>
+                            <td>matplotlib</td>
+                            <td>>= 3.4.0</td>
+                            <td>Plotting and visualization</td>
+                        </tr>
+                        <tr>
+                            <td>numpy</td>
+                            <td>>= 1.19.0</td>
+                            <td>Numerical computations</td>
+                        </tr>
+                    </table>
+                </section>
+
+                <section id="authors" class="section">
+                    <h2 class="section-title">👥 Authors</h2>
+                    <div class="authors">
+                        <div class="author-card">
+                            <h4>Vinayak Shinde</h4>
+                            <p><strong>Lead Developer</strong></p>
+                            <p style="color: var(--text-secondary); margin: 0.5rem 0;">vinayak.r.shinde.1729@gmail.com</p>
+                            <p><a href="https://github.com/vinayak1729-web" style="color: var(--accent-primary); text-decoration: none;">@vinayak1729-web</a></p>
+                        </div>
+                        <div class="author-card">
+                            <h4>Vishal Mishra</h4>
+                            <p><strong>Co-Developer</strong></p>
+                            <p style="color: var(--text-secondary); margin: 0.5rem 0;">vishal214.mishra@gmail.com</p>
+                            <p><a href="https://github.com/vishalmishra369" style="color: var(--accent-primary); text-decoration: none;">@vishalmishra369</a></p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="disclaimer" class="section">
+                    <h2 class="section-title">⚠️ Disclaimer</h2>
+                    <div class="warning-box">
+                        <p><strong>Important:</strong> QuantResearch is provided for <strong>educational and research purposes only</strong>. It is <strong>not intended as financial advice</strong>.</p>
+                        <ul style="margin: 1rem 0; padding-left: 2rem;">
+                            <li>Always consult with a qualified financial advisor before making investment decisions</li>
+                            <li>Past performance does not guarantee future results</li>
+                            <li>Technical indicators are tools and should not be used as sole decision-making factors</li>
+                            <li>Use proper risk management in all trading activities</li>
+                            <li>Test strategies thoroughly before live trading</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section class="section" style="text-align: center; padding: 3rem 0;">
+                    <p style="font-size: 1.2rem; color: var(--text-secondary);">
+                        📄 Licensed under <strong>MIT License</strong><br>
+                        🔗 <a href="https://github.com/vinayak1729-web/QuantR" style="color: var(--accent-primary);">GitHub Repository</a> | 
+                        <a href="https://pypi.org/project/QuantResearch/" style="color: var(--accent-primary);">PyPI Package</a>
+                    </p>
+                    <p style="margin-top: 1.5rem; font-size: 1.1rem;">
+                        Made with ❤️ by Vinayak Shinde and Vishal Mishra
+                    </p>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Highlight active section in sidebar
+        function updateActiveLink() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.sidebar a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveLink);
+        window.addEventListener('load', updateActiveLink);
+
+        // Close sidebar on mobile when link is clicked
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    document.getElementById('sidebar').classList.remove('open');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
