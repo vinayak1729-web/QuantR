@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="QuantResearch",
-    version="2.2",
+    version="2.3",
     author="Vinayak Shinde" "Vishal Mishra",
     author_email="vinayak.r.shinde.1729@gmail.com",
     description="Technical indicators and visualization tools for quantitative research",

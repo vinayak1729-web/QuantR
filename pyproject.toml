@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "QuantResearch"
-version = "2.2"
+version = "2.3"
 description = "Technical indicators and visualization tools for quantitative research"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -57,7 +57,7 @@ dev = [
 Homepage = "https://github.com/vinayak1729-web/QuantR"
 Repository = "https://github.com/vinayak1729-web/QuantR"
 Issues = "https://github.com/vinayak1729-web/QuantR/issues"
-Documentation = "https://github.com/vinayak1729-web/QuantR#readme"
+Documentation = "https://vinayak1729-web.github.io/QuantR/"
 
 [tool.setuptools.packages.find]
 where = ["."]
