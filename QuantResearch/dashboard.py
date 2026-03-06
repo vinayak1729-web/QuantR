@@ -17,12 +17,14 @@ import threading
 import platform
 import json, os, math
 
-from .indicators import (
+from indicators import (
     Rsi, RVWAP, macd, bb_bands, atr, fetch_data,
     sma, temma, demma, ema,
     stochastic, williams_r, obv, parabolic_sar,
     adx, ichimoku, pivot_points, fibonacci_levels, slope
 )
+
+from backtest_engine import add_backtest_tab
 
 # ═══════════════════════════════════════════════════════════════════
 # MANGO PALETTE
@@ -616,7 +618,7 @@ class QuantDashboard:
         ww, wh = int(sw*0.93), int(sh*0.90)
         root.geometry(f"{ww}x{wh}+{(sw-ww)//2}+{(sh-wh)//2}")
         root.configure(bg=C['bg'])
-
+        
         # ── Historical state ──────────────────────────────────
         self.data              = None
         self.benchmark_data    = None
@@ -2249,3 +2251,5 @@ def launch_dashboard():
     app  = QuantDashboard(root)
     root.mainloop()
 
+
+launch_dashboard()

@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "QuantResearch"
-version = "2.4.3"
+version = "2.5.2"
 description = "Technical indicators and visualization tools for quantitative research"
 readme = "README.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
 
 authors = [
-    { name = "Vinayak Shinde", email = "vinayak.r.shinde.1729@gmail.com" },
+    { name = "Vinayak Shinde", email = "shindevinayak233@gmail.com" },
     { name = "Vishal Mishra",  email = "vishal214.mishra@gmail.com" },
 ]
 

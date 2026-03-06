@@ -1,0 +1,950 @@
+# QuantQL — Language Reference v1.0
+
+> A human-readable query language that compiles to a Python backtesting engine.
+> Write strategies in plain English-like syntax. No Python knowledge needed.
+
+---
+
+## 1. SCRIPT STRUCTURE
+
+Every QuantQL script follows this order. Only `TICKER`, `BUY WHEN`, and `SELL WHEN` are mandatory — everything else has smart defaults.
+
+```
+┌──────────────────────────────────────────────┐
+│  BACKTEST "Strategy Name"      ← optional    │
+│  MARKET   NSE                  ← optional    │
+│  TICKER   RELIANCE             ← REQUIRED    │
+│  PERIOD   1Y                   ← optional    │
+│                                              │
+│  USE RSI(14)                   ← optional    │
+│  USE MACD(12, 26, 9)          ← optional    │
+│                                              │
+│  BUY  WHEN <condition>         ← REQUIRED    │
+│  SELL WHEN <condition>         ← REQUIRED    │
+│                                              │
+│  CAPITAL       100000          ← optional    │
+│  POSITION_SIZE 100%            ← optional    │
+│  STOP_LOSS     5%              ← optional    │
+│  TAKE_PROFIT   15%             ← optional    │
+│  COMMISSION    0.1%            ← optional    │
+│  SLIPPAGE      0.05%           ← optional    │
+│                                              │
+│  # comments start with #       ← anywhere   │
+└──────────────────────────────────────────────┘
+```
+
+**Rules:**
+- One statement per line
+- Order doesn't matter (except readability)
+- Case-insensitive (`buy when` = `BUY WHEN` = `Buy When`)
+- Comments: anything after `#` is ignored
+- Strings: wrap in double quotes `"like this"`
+- Percentages: number followed by `%` (e.g. `5%`, `0.1%`)
+
+---
+
+## 2. HEADER DECLARATIONS
+
+### 2.1 BACKTEST — Strategy Name
+
+```
+BACKTEST "My Strategy Name"
+```
+
+| Detail   | Value                           |
+|----------|---------------------------------|
+| Required | No                              |
+| Default  | `"Unnamed Strategy"`            |
+| Type     | Quoted string                   |
+| Purpose  | Labels charts, reports, exports |
+
+---
+
+### 2.2 MARKET — Exchange Selection
+
+```
+MARKET NSE
+```
+
+| Value    | Effect                                  | Currency | Auto-suffix |
+|----------|-----------------------------------------|----------|-------------|
+| `NSE`    | National Stock Exchange, India           | ₹        | `.NS`       |
+| `BSE`    | Bombay Stock Exchange, India             | ₹        | `.BO`       |
+| `US`     | US markets (NYSE, NASDAQ)               | $        | none        |
+| `CRYPTO` | Cryptocurrency pairs                    | $        | `-USD`      |
+| `AUTO`   | Auto-detect from known ticker lists     | auto     | auto        |
+
+**Default:** `AUTO`
+
+**How AUTO works:**
+1. Checks if ticker is in the known NSE list (100+ tickers) → appends `.NS`
+2. Checks if it ends with `-USD`, `-INR` etc → treats as crypto
+3. Falls back to US market
+
+---
+
+### 2.3 TICKER — Symbol
+
+```
+TICKER RELIANCE
+TICKER AAPL
+TICKER MARUTI
+TICKER BTCUSD       # auto-resolved to BTC-USD if MARKET CRYPTO
+```
+
+| Detail     | Value                                           |
+|------------|-------------------------------------------------|
+| Required   | **YES**                                         |
+| Type       | Bare identifier (no quotes needed)              |
+| Resolution | Combined with MARKET to build Yahoo Finance ID  |
+
+**Examples of resolution:**
+
+| You write          | MARKET   | Resolved to   |
+|--------------------|----------|---------------|
+| `TICKER RELIANCE`  | `NSE`    | `RELIANCE.NS` |
+| `TICKER RELIANCE`  | `BSE`    | `RELIANCE.BO` |
+| `TICKER RELIANCE`  | `AUTO`   | `RELIANCE.NS` (known NSE ticker) |
+| `TICKER AAPL`      | `AUTO`   | `AAPL` (not in NSE list → US) |
+| `TICKER AAPL`      | `US`     | `AAPL`        |
+| `TICKER BTC`       | `CRYPTO` | `BTC-USD`     |
+
+---
+
+### 2.4 PERIOD — Lookback Window
+
+```
+PERIOD 1Y
+```
+
+How far back from today to fetch data.
+
+| Suffix | Meaning | Examples                    |
+|--------|---------|-----------------------------|
+| `D`    | Days    | `1D`, `5D`, `30D`, `90D`    |
+| `W`    | Weeks   | `1W`, `2W`, `4W`, `12W`     |
+| `M`    | Months  | `1M`, `3M`, `6M`, `9M`      |
+| `Y`    | Years   | `1Y`, `2Y`, `3Y`, `5Y`      |
+
+**Default:** `1Y` (365 days)
+
+**Date calculation:**
+- `end_date` = today
+- `start_date` = today − period
+- Example: `PERIOD 6M` on March 6, 2026 → fetches Sep 6, 2025 → Mar 6, 2026
+
+---
+
+## 3. INDICATOR DECLARATIONS (USE)
+
+```
+USE <INDICATOR_NAME>(<param1>, <param2>, ...)
+```
+
+Each `USE` tells the engine to pre-compute an indicator before simulation begins. You can declare multiple.
+
+### 3.1 Complete Indicator Table
+
+| Declaration              | Computes                        | Condition Names Available                  |
+|--------------------------|---------------------------------|--------------------------------------------|
+| `USE RSI(14)`            | Relative Strength Index         | `RSI`                                      |
+| `USE MACD(12, 26, 9)`   | MACD + Signal + Histogram       | `MACD`, `SIGNAL`, `HISTOGRAM`              |
+| `USE SMA(50)`            | Simple Moving Average           | `SMA`                                      |
+| `USE EMA(20)`            | Exponential Moving Average      | `EMA`                                      |
+| `USE DEMA(20)`           | Double EMA                      | `DEMA`                                     |
+| `USE TEMA(20)`           | Triple EMA                      | `TEMA`                                     |
+| `USE BB(20)`             | Bollinger Bands (2σ)            | `BB_UPPER`, `BB_MID`, `BB_LOWER`           |
+| `USE ATR(14)`            | Average True Range              | `ATR`                                      |
+| `USE STOCH(14, 3)`       | Stochastic Oscillator           | `STOCH_K`, `STOCH_D`                       |
+| `USE WILLIAMS(14)`       | Williams %R                     | `WILLIAMS`                                 |
+| `USE ADX(14)`            | Avg Directional Index           | `ADX`, `PLUS_DI`, `MINUS_DI`              |
+| `USE SLOPE(14)`          | Price slope (normalised %)      | `SLOPE`                                    |
+| `USE SAR`                | Parabolic SAR                   | `SAR`, `SAR_TREND`                         |
+| `USE OBV`                | On-Balance Volume               | `OBV`                                      |
+| `USE VWAP(20)`           | Rolling VWAP                    | `VWAP`                                     |
+
+### 3.2 Parameter Details
+
+**RSI(period)**
+- `period`: lookback window (default: 14)
+- Output range: 0–100
+- Typical: <30 = oversold, >70 = overbought
+
+**MACD(short, long, signal)**
+- `short`: fast EMA period (default: 12)
+- `long`: slow EMA period (default: 26)
+- `signal`: signal line EMA period (default: 9)
+- Produces three values:
+  - `MACD` = fast EMA − slow EMA
+  - `SIGNAL` = EMA of MACD line
+  - `HISTOGRAM` = MACD − SIGNAL
+
+**SMA(period) / EMA(period) / DEMA(period) / TEMA(period)**
+- `period`: rolling window length
+- These are overlay values (same scale as price)
+- Use in conditions like `CLOSE > SMA(50)`
+
+**BB(period)**
+- `period`: rolling window for mean + std (default: 20)
+- Uses 2 standard deviations
+- Produces:
+  - `BB_UPPER` = mean + 2σ
+  - `BB_MID` = rolling mean
+  - `BB_LOWER` = mean − 2σ
+
+**ATR(period)**
+- `period`: Wilder's smoothing window (default: 14)
+- Measures volatility in price units (₹ or $)
+- Use for position sizing or volatility filters
+
+**STOCH(k_period, d_period)**
+- `k_period`: %K lookback (default: 14)
+- `d_period`: %D smoothing (default: 3)
+- Output range: 0–100
+- `STOCH_K` = fast line, `STOCH_D` = slow/signal line
+
+**WILLIAMS(period)**
+- `period`: lookback (default: 14)
+- Output range: −100 to 0
+- <−80 = oversold, >−20 = overbought
+
+**ADX(period)**
+- `period`: smoothing window (default: 14)
+- `ADX`: trend strength (0–100). >25 = trending
+- `PLUS_DI`: bullish directional
+- `MINUS_DI`: bearish directional
+
+**SLOPE(period)**
+- `period`: regression window (default: 14)
+- Output: normalised slope as % per bar
+- Positive = uptrend, Negative = downtrend
+
+**SAR** (no parameters)
+- `SAR`: the parabolic SAR price level
+- `SAR_TREND`: +1 = uptrend, −1 = downtrend
+
+**OBV** (no parameters)
+- Cumulative volume × direction
+- Rising OBV = buying pressure, Falling = selling
+
+**VWAP(period)**
+- `period`: rolling window (default: 20)
+- Volume-weighted average price
+
+### 3.3 Auto-Declaration
+
+If you reference an indicator in a condition but forget `USE`, the engine **auto-declares** it with default parameters:
+
+```
+# This works even without USE RSI(14):
+BUY WHEN RSI > 30
+# Engine auto-creates RSI with period=14
+```
+
+But explicit `USE` is recommended so you control the parameters.
+
+---
+
+## 4. CONDITIONS — The Core of QuantQL
+
+### 4.1 Overview
+
+```
+BUY  WHEN <condition>
+SELL WHEN <condition>
+```
+
+A condition is a logical expression built from:
+- **Values** (indicator outputs, price fields, numbers)
+- **Comparison operators** (`>`, `<`, `>=`, `<=`, `==`, `!=`)
+- **Crossover operators** (`CROSSES_ABOVE`, `CROSSES_BELOW`)
+- **Logical operators** (`AND`, `OR`, `NOT`)
+- **Grouping** with parentheses `( ... )`
+
+### 4.2 Values — What You Can Compare
+
+#### Price Fields
+
+| Name     | Maps to           | Description         |
+|----------|-------------------|---------------------|
+| `CLOSE`  | Current bar close  | Most commonly used  |
+| `OPEN`   | Current bar open   | Gap analysis        |
+| `HIGH`   | Current bar high   | Range breakout      |
+| `LOW`    | Current bar low    | Support testing     |
+| `VOLUME` | Current bar volume | Volume confirmation |
+
+#### Indicator Outputs
+
+Every indicator from Section 3 produces named values you can use directly:
+
+```
+RSI                    # current RSI value
+MACD                   # MACD line value
+SIGNAL                 # MACD signal line
+HISTOGRAM              # MACD histogram
+SMA                    # SMA value (or SMA(50) inline)
+EMA                    # EMA value
+DEMA, TEMA             # double/triple EMA
+BB_UPPER, BB_MID, BB_LOWER
+STOCH_K, STOCH_D
+WILLIAMS
+ADX, PLUS_DI, MINUS_DI
+ATR
+SLOPE
+SAR, SAR_TREND
+OBV
+VWAP
+```
+
+#### Inline Parameterised Values
+
+You can specify indicator params directly in conditions:
+
+```
+BUY WHEN CLOSE > SMA(200) AND EMA(10) > EMA(50)
+```
+
+This computes SMA(200), EMA(10), and EMA(50) on the fly.
+
+#### Literal Numbers
+
+```
+BUY WHEN RSI > 30
+SELL WHEN ADX < 20
+BUY WHEN CLOSE > 1500.50
+```
+
+### 4.3 Comparison Operators
+
+| Operator | Meaning                  | Example               |
+|----------|--------------------------|-----------------------|
+| `>`      | Greater than             | `RSI > 70`            |
+| `<`      | Less than                | `RSI < 30`            |
+| `>=`     | Greater than or equal    | `ADX >= 25`           |
+| `<=`     | Less than or equal       | `WILLIAMS <= -80`     |
+| `==`     | Equal to                 | `SAR_TREND == 1`      |
+| `!=`     | Not equal to             | `SAR_TREND != -1`     |
+
+Both sides can be any value:
+
+```
+BUY WHEN EMA > SMA              # indicator vs indicator
+BUY WHEN CLOSE > BB_UPPER       # price vs indicator
+BUY WHEN RSI > 30               # indicator vs number
+BUY WHEN CLOSE > 2500           # price vs number
+```
+
+### 4.4 Crossover Operators
+
+These detect the **moment** one value crosses another — not just whether it's above/below, but whether it **just became** above/below in the current bar.
+
+| Operator          | Meaning                                           |
+|-------------------|---------------------------------------------------|
+| `CROSSES_ABOVE`   | Was ≤ previous bar, now > this bar                |
+| `CROSSES_BELOW`   | Was ≥ previous bar, now < this bar                |
+
+**How it works internally (bar `i`):**
+
+```
+MACD CROSSES_ABOVE SIGNAL
+
+  previous bar:  MACD[i-1] <= SIGNAL[i-1]
+  current bar:   MACD[i]   >  SIGNAL[i]
+  → both must be true for CROSSES_ABOVE = true
+```
+
+**Examples:**
+
+```
+# MACD bullish crossover
+MACD CROSSES_ABOVE SIGNAL
+
+# MACD bearish crossover
+MACD CROSSES_BELOW SIGNAL
+
+# Price breaks above SMA
+CLOSE CROSSES_ABOVE SMA(50)
+
+# Stochastic golden cross
+STOCH_K CROSSES_ABOVE STOCH_D
+
+# EMA crossover
+EMA(10) CROSSES_ABOVE EMA(50)
+
+# Price crosses Bollinger
+CLOSE CROSSES_BELOW BB_LOWER
+
+# RSI exits oversold
+RSI CROSSES_ABOVE 30
+
+# +DI crosses above -DI (ADX trend start)
+PLUS_DI CROSSES_ABOVE MINUS_DI
+```
+
+### 4.5 Logical Operators
+
+| Operator | Meaning          | Precedence |
+|----------|------------------|------------|
+| `NOT`    | Negate condition | Highest    |
+| `AND`    | Both must be true| Medium     |
+| `OR`     | Either is true   | Lowest     |
+
+**AND — All conditions must be true simultaneously:**
+
+```
+BUY WHEN RSI > 30 AND MACD CROSSES_ABOVE SIGNAL AND ADX > 25
+#         ^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^
+#         cond 1       cond 2                          cond 3
+#         ALL THREE must be true on the same bar
+```
+
+**OR — At least one condition must be true:**
+
+```
+SELL WHEN RSI > 70 OR MACD CROSSES_BELOW SIGNAL
+#         ^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#         either one triggers the sell
+```
+
+**NOT — Invert a condition:**
+
+```
+BUY WHEN NOT RSI > 70 AND CLOSE > SMA(50)
+# equivalent to: RSI <= 70 AND CLOSE > SMA(50)
+```
+
+**Grouping with parentheses — Override precedence:**
+
+```
+# Without parens: AND binds tighter than OR
+SELL WHEN RSI > 80 OR MACD CROSSES_BELOW SIGNAL AND ADX < 20
+# parsed as: RSI > 80 OR (MACD CROSSES_BELOW SIGNAL AND ADX < 20)
+
+# With parens: force OR to group first
+SELL WHEN (RSI > 80 OR MACD CROSSES_BELOW SIGNAL) AND ADX < 20
+# now: (either RSI>80 or MACD cross) AND ADX must be < 20
+```
+
+### 4.6 Complex Condition Examples
+
+```
+# Multi-indicator confluence entry
+BUY WHEN RSI > 30 AND RSI < 70 AND MACD CROSSES_ABOVE SIGNAL AND CLOSE > SMA(50) AND ADX > 25
+
+# Bollinger + Volume squeeze
+BUY WHEN CLOSE < BB_LOWER AND RSI < 35 AND VOLUME > 1000000
+
+# Stochastic in oversold + trend confirmation
+BUY WHEN STOCH_K < 20 AND STOCH_K CROSSES_ABOVE STOCH_D AND ADX > 20
+
+# Parabolic SAR reversal
+BUY WHEN SAR_TREND == 1 AND CLOSE > EMA(20)
+SELL WHEN SAR_TREND == -1 OR CLOSE < EMA(20)
+
+# Multi-timeframe concept (using different MA periods)
+BUY WHEN EMA(10) > EMA(20) AND EMA(20) > SMA(50) AND RSI > 40
+
+# Complex exit with take-profit override
+SELL WHEN (RSI > 75 AND MACD CROSSES_BELOW SIGNAL) OR CLOSE CROSSES_BELOW SMA(50)
+
+# Directional movement filter
+BUY WHEN PLUS_DI > MINUS_DI AND PLUS_DI CROSSES_ABOVE 25 AND RSI > 30
+SELL WHEN MINUS_DI > PLUS_DI OR ADX < 15
+```
+
+---
+
+## 5. TRADE MANAGEMENT
+
+### 5.1 CAPITAL — Starting Money
+
+```
+CAPITAL 100000
+CAPITAL 500000
+CAPITAL 50000
+```
+
+| Detail   | Value              |
+|----------|--------------------|
+| Default  | `100000`           |
+| Type     | Number (no symbol) |
+| Currency | Determined by MARKET (₹ for NSE/BSE, $ for US) |
+
+### 5.2 POSITION_SIZE — Per-Trade Allocation
+
+```
+POSITION_SIZE 100%     # all-in (default)
+POSITION_SIZE 50%      # half the available capital per trade
+POSITION_SIZE 20%      # 1/5th — allows overlapping if extended later
+POSITION_SIZE 10%      # conservative
+```
+
+| Detail   | Value                                    |
+|----------|------------------------------------------|
+| Default  | `100%`                                   |
+| Range    | `1%` to `100%`                           |
+| Effect   | `shares = floor(capital × pct / price)`  |
+
+**How it works:**
+```
+Available capital: ₹100,000
+Position size: 20%
+Stock price: ₹2,500
+→ Allocation = ₹100,000 × 0.20 = ₹20,000
+→ Shares = floor(₹20,000 / ₹2,500) = 8 shares
+→ Actually deployed = 8 × ₹2,500 = ₹20,000
+```
+
+### 5.3 STOP_LOSS — Maximum Loss Per Trade
+
+```
+STOP_LOSS 5%           # exit if trade drops 5% from entry
+STOP_LOSS 3%           # tighter stop
+STOP_LOSS 10%          # wider stop for volatile stocks
+```
+
+| Detail    | Value                                      |
+|-----------|--------------------------------------------|
+| Default   | `0%` (disabled)                            |
+| Type      | Fixed percentage from entry price          |
+| Priority  | Checked BEFORE signal-based sell           |
+| Execution | Triggers at close of bar where breach occurs |
+
+**How it works:**
+```
+Entry price: ₹2,500
+Stop loss: 5%
+Trigger price: ₹2,500 × (1 − 0.05) = ₹2,375
+If close ≤ ₹2,375 → forced exit with reason "stop_loss"
+```
+
+### 5.4 TAKE_PROFIT — Target Profit Per Trade
+
+```
+TAKE_PROFIT 15%        # exit if trade gains 15% from entry
+TAKE_PROFIT 10%
+TAKE_PROFIT 25%        # wider target for swing trades
+```
+
+| Detail    | Value                                       |
+|-----------|---------------------------------------------|
+| Default   | `0%` (disabled)                             |
+| Type      | Fixed percentage above entry price          |
+| Priority  | Checked BEFORE signal-based sell            |
+
+**How it works:**
+```
+Entry price: ₹2,500
+Take profit: 15%
+Trigger price: ₹2,500 × (1 + 0.15) = ₹2,875
+If close ≥ ₹2,875 → forced exit with reason "take_profit"
+```
+
+### 5.5 COMMISSION — Brokerage / Transaction Cost
+
+```
+COMMISSION 0.1%        # typical Indian discount broker
+COMMISSION 0.05%       # US-style low commission
+COMMISSION 0.5%        # higher for crypto or full-service
+```
+
+| Detail    | Value                                         |
+|-----------|-----------------------------------------------|
+| Default   | `0.1%`                                        |
+| Applied   | On BOTH entry and exit (each side separately) |
+| Deducted  | From capital on entry, from proceeds on exit  |
+
+**Calculation:**
+```
+Buy  100 shares @ ₹2,500 → commission = 100 × ₹2,500 × 0.001 = ₹250
+Sell 100 shares @ ₹2,800 → commission = 100 × ₹2,800 × 0.001 = ₹280
+Total commission for this trade = ₹530
+```
+
+### 5.6 SLIPPAGE — Execution Gap (Planned)
+
+```
+SLIPPAGE 0.05%         # simulate 0.05% worse execution
+```
+
+| Detail    | Value                                 |
+|-----------|---------------------------------------|
+| Default   | `0%`                                  |
+| Effect    | Buys execute at price × (1 + slip)    |
+|           | Sells execute at price × (1 − slip)  |
+
+### 5.7 Exit Priority Order
+
+On each bar, the engine checks exits in this order:
+
+```
+1. STOP_LOSS    ← checked first (risk management)
+2. TAKE_PROFIT  ← checked second (profit booking)
+3. SELL WHEN    ← signal-based exit checked last
+```
+
+First one to trigger wins. The `exit_reason` field in each trade tells you which one fired.
+
+---
+
+## 6. SIMULATION RULES
+
+### 6.1 Bar-by-Bar Processing
+
+```
+For each bar (after warmup):
+  │
+  ├─ If position is OPEN:
+  │    ├─ Check stop loss        → exit if hit
+  │    ├─ Check take profit      → exit if hit
+  │    └─ Check SELL condition   → exit if true
+  │
+  └─ If position is FLAT (no open trade):
+       └─ Check BUY condition    → enter if true
+```
+
+- Trades execute at the **close price** of the signal bar
+- Only **one position** at a time (no pyramiding in v1)
+- Long-only in v1 (no short selling yet)
+
+### 6.2 Warmup Period
+
+The first ~60 bars are skipped to let indicators stabilise:
+
+```
+60 bars warmup (or 25% of data, whichever is smaller)
+├─ RSI needs ~14 bars
+├─ MACD needs ~26+ bars
+├─ SMA(50) needs 50 bars
+└─ Engine waits 60 to be safe
+```
+
+Equity is flat during warmup.
+
+### 6.3 End-of-Data Handling
+
+If a position is still open when data ends:
+- Forced close at last bar's closing price
+- Tagged with `exit_reason = "end_of_data"`
+- Included in trade statistics
+
+---
+
+## 7. OUTPUT — What You Get Back
+
+### 7.1 Metrics
+
+| Metric              | Description                                      |
+|---------------------|--------------------------------------------------|
+| Total Trades        | Number of completed round-trip trades            |
+| Winners             | Trades with positive P&L                         |
+| Losers              | Trades with negative or zero P&L                 |
+| Win Rate            | Winners ÷ Total × 100%                          |
+| Net P&L             | Total profit/loss after commissions              |
+| Total Return        | (Final equity ÷ Starting capital − 1) × 100%    |
+| Gross Profit        | Sum of all winning trade P&Ls                    |
+| Gross Loss          | Sum of all losing trade P&Ls                     |
+| Profit Factor       | Gross Profit ÷ |Gross Loss|                     |
+| Avg Win             | Mean P&L of winning trades                       |
+| Avg Loss            | Mean P&L of losing trades                        |
+| Avg Win/Loss Ratio  | |Avg Win| ÷ |Avg Loss|                          |
+| Max Consec Wins     | Longest winning streak                           |
+| Max Consec Losses   | Longest losing streak                            |
+| Avg Hold (days)     | Average trade duration                           |
+| Total Commission    | Total brokerage paid                             |
+| Sharpe Ratio        | Risk-adjusted return (annualised)                |
+| Max Drawdown        | Largest peak-to-trough equity drop               |
+| Volatility (ann)    | Annualised standard deviation of returns         |
+| Starting Capital    | What you started with                            |
+| Final Equity        | What you ended with                              |
+
+### 7.2 Trade Log
+
+Each trade records:
+```
+Entry Date    → when BUY triggered
+Exit Date     → when SELL/SL/TP triggered
+Entry Price   → close price at entry bar
+Exit Price    → close price at exit bar
+Shares        → number of shares bought
+P&L           → net profit/loss (after commission)
+P&L %         → percentage return on the trade
+Exit Reason   → "signal" | "stop_loss" | "take_profit" | "end_of_data"
+Commission    → total commission for this trade
+```
+
+### 7.3 Visual Panels (GUI)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Panel 1: PRICE CHART                                    │
+│   • Candlesticks with buy (▲) and sell (▼) markers      │
+│   • Overlaid indicators (MAs, BB bands, SAR dots)       │
+│   • Live animation: bar-by-bar replay of simulation     │
+│                                                         │
+│ Panel 2: INDICATOR SUBPLOTS                             │
+│   • RSI with 30/70 zones                                │
+│   • MACD with signal crossovers                         │
+│   • ADX with DI lines                                   │
+│   • Any active indicator                                │
+│                                                         │
+│ Panel 3: EQUITY CURVE                                   │
+│   • Green fill when above starting capital              │
+│   • Red fill when below                                 │
+│   • Horizontal line at starting capital                  │
+│                                                         │
+│ Panel 4: DRAWDOWN                                       │
+│   • Red fill showing % drawdown from peak               │
+│                                                         │
+│ Panel 5: TRADE P&L BARS                                 │
+│   • Green/red bars for each trade's profit/loss         │
+│                                                         │
+│ Panel 6: METRICS CARD                                   │
+│   • Key statistics in a formatted table                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 8. COMPLETE STRATEGY EXAMPLES
+
+### 8.1 Beginner: Simple RSI
+
+```
+BACKTEST "Simple RSI"
+MARKET NSE
+TICKER RELIANCE
+PERIOD 1Y
+
+USE RSI(14)
+
+BUY  WHEN RSI < 30
+SELL WHEN RSI > 70
+
+CAPITAL 500000
+STOP_LOSS 5%
+```
+
+**Logic:** Buy when oversold, sell when overbought. 5% safety net.
+
+---
+
+### 8.2 Classic: MACD + RSI Filter
+
+```
+BACKTEST "RSI + MACD Crossover"
+MARKET NSE
+TICKER MARUTI
+PERIOD 1Y
+
+USE RSI(14)
+USE MACD(12, 26, 9)
+
+BUY  WHEN RSI > 30 AND MACD CROSSES_ABOVE SIGNAL
+SELL WHEN RSI > 70 OR MACD CROSSES_BELOW SIGNAL
+
+CAPITAL 100000
+POSITION_SIZE 100%
+STOP_LOSS 5%
+TAKE_PROFIT 15%
+COMMISSION 0.1%
+```
+
+**Logic:** Enter on MACD bullish cross (only if RSI confirms not overbought). Exit on RSI overbought OR MACD bearish cross.
+
+---
+
+### 8.3 Mean Reversion: Bollinger Bounce
+
+```
+BACKTEST "Bollinger Bounce"
+MARKET NSE
+TICKER HDFCBANK
+PERIOD 6M
+
+USE BB(20)
+USE RSI(14)
+
+BUY  WHEN CLOSE < BB_LOWER AND RSI < 35
+SELL WHEN CLOSE > BB_MID OR RSI > 65
+
+CAPITAL 300000
+STOP_LOSS 3%
+TAKE_PROFIT 8%
+COMMISSION 0.1%
+```
+
+**Logic:** Buy when price falls below lower Bollinger Band with RSI confirmation. Sell at mid-band reversion. Conservative stops.
+
+---
+
+### 8.4 Trend Following: SMA + ADX
+
+```
+BACKTEST "SMA Trend + ADX Filter"
+MARKET US
+TICKER AAPL
+PERIOD 2Y
+
+USE SMA(50)
+USE EMA(20)
+USE ADX(14)
+USE RSI(14)
+
+BUY  WHEN CLOSE > SMA(50) AND EMA > SMA(50) AND ADX > 25 AND RSI > 40
+SELL WHEN CLOSE < SMA(50) OR RSI > 80
+
+CAPITAL 50000
+POSITION_SIZE 100%
+STOP_LOSS 7%
+TAKE_PROFIT 20%
+COMMISSION 0.05%
+```
+
+**Logic:** Buy only in strong uptrends (ADX > 25) when price and EMA are above SMA50. Wide stops for trend-following.
+
+---
+
+### 8.5 Stochastic Reversal
+
+```
+BACKTEST "Stochastic Oversold Reversal"
+MARKET NSE
+TICKER TCS
+PERIOD 1Y
+
+USE STOCH(14, 3)
+USE ADX(14)
+
+BUY  WHEN STOCH_K < 20 AND STOCH_K CROSSES_ABOVE STOCH_D AND ADX > 20
+SELL WHEN STOCH_K > 80 OR STOCH_K CROSSES_BELOW STOCH_D
+
+CAPITAL 200000
+STOP_LOSS 4%
+TAKE_PROFIT 12%
+COMMISSION 0.1%
+```
+
+---
+
+### 8.6 Multi-Indicator Confluence
+
+```
+BACKTEST "Everything Confluence"
+MARKET NSE
+TICKER INFY
+PERIOD 1Y
+
+USE RSI(14)
+USE MACD(12, 26, 9)
+USE BB(20)
+USE ADX(14)
+USE SMA(50)
+
+BUY  WHEN RSI > 30 AND RSI < 60 AND MACD CROSSES_ABOVE SIGNAL AND CLOSE > SMA(50) AND ADX > 20
+SELL WHEN (RSI > 75 OR MACD CROSSES_BELOW SIGNAL) AND CLOSE < SMA(50)
+
+CAPITAL 100000
+STOP_LOSS 5%
+TAKE_PROFIT 18%
+COMMISSION 0.1%
+```
+
+---
+
+### 8.7 Crypto Momentum
+
+```
+BACKTEST "BTC Momentum"
+MARKET CRYPTO
+TICKER BTC
+PERIOD 6M
+
+USE RSI(14)
+USE EMA(20)
+USE SMA(50)
+USE SLOPE(14)
+
+BUY  WHEN EMA > SMA(50) AND RSI > 45 AND SLOPE > 0
+SELL WHEN EMA CROSSES_BELOW SMA(50) OR RSI > 80
+
+CAPITAL 50000
+STOP_LOSS 8%
+TAKE_PROFIT 25%
+COMMISSION 0.2%
+```
+
+---
+
+## 9. GRAMMAR (Formal Specification)
+
+For those who want the exact BNF-style grammar:
+
+```
+script       := statement*
+statement    := backtest_decl | market_decl | ticker_decl | period_decl
+              | use_decl | buy_rule | sell_rule
+              | capital_decl | possize_decl | stoploss_decl
+              | takeprofit_decl | commission_decl | slippage_decl
+
+backtest_decl  := 'BACKTEST' STRING
+market_decl    := 'MARKET'   IDENT
+ticker_decl    := 'TICKER'   IDENT
+period_decl    := 'PERIOD'   IDENT           # e.g. "1Y", "6M"
+
+use_decl       := 'USE' IDENT ( '(' num_list ')' )?
+num_list       := NUMBER ( ',' NUMBER )*
+
+buy_rule       := 'BUY'  'WHEN' condition
+sell_rule      := 'SELL' 'WHEN' condition
+
+capital_decl   := 'CAPITAL'       NUMBER
+possize_decl   := 'POSITION_SIZE' PERCENT
+stoploss_decl  := 'STOP_LOSS'     PERCENT
+takeprofit_decl:= 'TAKE_PROFIT'   PERCENT
+commission_decl:= 'COMMISSION'    PERCENT
+slippage_decl  := 'SLIPPAGE'      PERCENT
+
+condition      := cond_term ( ('AND' | 'OR') cond_term )*
+cond_term      := 'NOT'? cond_atom
+cond_atom      := '(' condition ')' | comparison | crossover
+
+comparison     := value comp_op value
+crossover      := value ('CROSSES_ABOVE' | 'CROSSES_BELOW') value
+comp_op        := '>' | '<' | '>=' | '<=' | '==' | '!='
+
+value          := NUMBER
+               | IDENT ( '(' num_list ')' )?    # indicator or price field
+
+IDENT          := [A-Za-z_][A-Za-z0-9_]*
+NUMBER         := [0-9]+ ('.' [0-9]+)?
+PERCENT        := NUMBER '%'
+STRING         := '"' [^"]* '"'
+COMMENT        := '#' [^\n]*
+```
+
+---
+
+## 10. ERROR MESSAGES
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `expected NUMBER, got IDENT` | Missing parameter | Add number: `USE RSI(14)` not `USE RSI` |
+| `unexpected char '!'` | Invalid syntax | Check operator: use `!=` not `!` |
+| `Invalid period 'ABC'` | Bad period format | Use `1Y`, `6M`, `30D`, etc. |
+| `No data returned for X` | Ticker not found | Check ticker spelling / market setting |
+| `No trades generated` | Conditions never true | Loosen conditions or extend period |
+
+---
+
+## 11. TIPS FOR GOOD STRATEGIES
+
+1. **Always use STOP_LOSS** — protects capital from catastrophic drops
+2. **Don't over-fit** — 5+ conditions in BUY rarely trigger; start with 2–3
+3. **Test multiple periods** — a strategy that works on 1Y might fail on 3Y
+4. **Commission matters** — 0.1% per side eats into short-term strategies
+5. **CROSSES_ABOVE/BELOW** generates fewer signals than `>` / `<` — use crossovers for entries, comparisons for exits
+6. **Check trade count** — fewer than 10 trades means statistically meaningless results
+7. **Profit Factor > 1.5** is decent, **> 2.0** is strong
+8. **Sharpe > 1.0** is acceptable, **> 2.0** is excellent
+9. **Max Drawdown** tells you the worst pain — ask yourself "can I stomach a −X% drop?"
