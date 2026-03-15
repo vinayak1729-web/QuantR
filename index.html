@@ -1,1131 +1,1170 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantResearch - Professional Technical Analysis Library</title>
+    <title>QuantResearch 2.5.3 — Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#0b1120;--bg-alt:#131b2e;--bg-code:#0d1526;--bg-nav:#0b1120;
+            --text:#e2e8f0;--text-2:#94a3b8;--text-3:#64748b;
+            --border:#1e293b;--border-light:#1a2332;
+            --accent:#60a5fa;--accent-hover:#93bbfc;--accent-light:rgba(96,165,250,.1);
+            --green:#34d399;--green-light:rgba(52,211,153,.08);
+            --orange:#fbbf24;--red:#f87171;--purple:#a78bfa;--cyan:#22d3ee;
+            --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+            --shadow:0 2px 8px rgba(0,0,0,.3);
+            --shadow-lg:0 12px 24px rgba(0,0,0,.4);
+            --radius:8px;--radius-lg:12px;
+            --sidebar-w:264px;--nav-h:56px;
+            --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+            --font-mono:'JetBrains Mono','Fira Code',monospace;
+            --glow:0 0 20px rgba(96,165,250,.1);
+        }
+        [data-theme="light"]{
+            --bg:#ffffff;--bg-alt:#f8fafc;--bg-code:#f1f5f9;--bg-nav:#ffffff;
+            --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+            --border:#e2e8f0;--border-light:#f1f5f9;
+            --accent:#3b82f6;--accent-hover:#2563eb;--accent-light:rgba(59,130,246,.06);
+            --green:#10b981;--green-light:rgba(16,185,129,.06);
+            --orange:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--cyan:#06b6d4;
+            --shadow-sm:0 1px 2px rgba(0,0,0,.04);
+            --shadow:0 2px 8px rgba(0,0,0,.06);
+            --shadow-lg:0 12px 24px rgba(0,0,0,.08);
+            --glow:none;
+        }
+        html{scroll-behavior:smooth}
+        body{font-family:var(--font-sans);color:var(--text);background:var(--bg);line-height:1.7;transition:background .25s,color .25s}
+        ::selection{background:var(--accent);color:#fff}
+
+        /* NAV */
+        .nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);border-bottom:1px solid var(--border);z-index:100;display:flex;align-items:center;padding:0 24px;backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);background:rgba(11,17,32,.82)}
+        [data-theme="light"] .nav{background:rgba(255,255,255,.85)}
+        .nav-inner{max-width:1440px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+        .nav-logo{font-weight:800;font-size:1.1rem;color:var(--accent);display:flex;align-items:center;gap:8px;text-decoration:none;letter-spacing:-.02em}
+        .nav-logo .vtag{color:var(--text-3);font-weight:500;font-size:.72rem;padding:2px 8px;border:1px solid var(--border);border-radius:4px;letter-spacing:0}
+        .nav-right{display:flex;align-items:center;gap:8px}
+        .nav-link{color:var(--text-2);text-decoration:none;font-size:.82rem;font-weight:500;padding:6px 12px;border-radius:6px;transition:all .15s}
+        .nav-link:hover{color:var(--accent);background:var(--accent-light)}
+        .btn-sm{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;transition:all .15s}
+        .btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg-alt);border-color:var(--accent)}
+        .mobile-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer;padding:4px}
+
+        /* SIDEBAR */
+        .sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--bg);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0;z-index:90;transition:transform .25s}
+        .sidebar::-webkit-scrollbar{width:3px}.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+        .sb-group{margin-bottom:4px}
+        .sb-label{padding:12px 20px 4px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3)}
+        .sb-link{display:block;padding:4px 20px 4px 24px;font-size:.8rem;color:var(--text-2);text-decoration:none;border-left:2px solid transparent;transition:all .12s;line-height:1.85}
+        .sb-link:hover{color:var(--accent);background:var(--accent-light);border-left-color:var(--accent)}
+        .sb-link.active{color:var(--accent);background:var(--accent-light);border-left-color:var(--accent);font-weight:600}
+
+        /* MAIN */
+        .main{margin-left:var(--sidebar-w);padding:32px 48px 80px;max-width:940px}
+        .main>section{margin-bottom:52px;scroll-margin-top:calc(var(--nav-h) + 20px)}
+
+        /* HERO */
+        .hero{background:linear-gradient(135deg,#0c1929 0%,#1a365d 30%,#1e40af 60%,#047857 100%);color:#fff;border-radius:var(--radius-lg);padding:52px 44px;margin-bottom:48px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06);box-shadow:var(--glow)}
+        .hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+        .hero::after{content:'';position:absolute;top:-50%;right:-20%;width:500px;height:500px;background:radial-gradient(circle,rgba(96,165,250,.12) 0%,transparent 60%);pointer-events:none}
+        .hero h1{font-size:2.6rem;font-weight:800;margin-bottom:6px;letter-spacing:-.03em;position:relative}
+        .hero .ver{font-size:.88rem;opacity:.6;margin-bottom:18px;font-weight:500;letter-spacing:.02em}
+        .hero p{font-size:1rem;opacity:.85;max-width:620px;line-height:1.75;margin-bottom:28px;position:relative}
+        .badge-row{display:flex;gap:8px;flex-wrap:wrap;position:relative}
+        .badge{background:rgba(255,255,255,.1);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:.73rem;font-weight:600;border:1px solid rgba(255,255,255,.08)}
+        [data-theme="light"] .hero{background:linear-gradient(135deg,#1e3a5f 0%,#3b82f6 50%,#10b981 100%)}
+
+        /* TYPOGRAPHY */
+        h2.sec-title{font-size:1.45rem;font-weight:700;color:var(--text);margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:-.01em}
+        h3.sub-title{font-size:1.08rem;font-weight:600;color:var(--text);margin:28px 0 10px}
+        h4.fn-sig{font-family:var(--font-mono);font-size:.88rem;color:var(--accent);background:var(--accent-light);display:inline-block;padding:5px 16px;border-radius:6px;margin-bottom:12px;font-weight:500;border:1px solid rgba(96,165,250,.15)}
+        p{margin-bottom:12px;color:var(--text-2);font-size:.9rem}
+        strong{color:var(--text)}
+
+        /* CODE */
+        .code-block{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto;margin:16px 0;position:relative}
+        .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 8px 16px;border-bottom:1px solid var(--border);background:var(--bg-alt)}
+        .code-lang{font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--text-3);letter-spacing:.08em}
+        .copy-btn{display:inline-flex;align-items:center;gap:4px;background:transparent;color:var(--text-3);border:1px solid var(--border);padding:3px 10px;border-radius:5px;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--font-sans)}
+        .copy-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-light)}
+        .copy-btn.copied{color:var(--green);border-color:var(--green)}
+        .code-block pre{padding:16px 20px;margin:0;font-family:var(--font-mono);font-size:.82rem;line-height:1.7;color:var(--text)}
+        code{font-family:var(--font-mono);background:var(--bg-code);padding:1px 6px;border-radius:4px;font-size:.86em;border:1px solid var(--border)}
+
+        /* TABLE */
+        .tbl-wrap{overflow-x:auto;margin:16px 0;border:1px solid var(--border);border-radius:var(--radius)}
+        table{width:100%;border-collapse:collapse}
+        th{background:var(--bg-alt);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border)}
+        td{padding:10px 16px;font-size:.85rem;border-bottom:1px solid var(--border-light);color:var(--text-2)}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:var(--accent-light)}
+
+        /* CALLOUT */
+        .callout{padding:14px 18px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;border:1px solid var(--border)}
+        .callout-info{background:var(--accent-light);border-left:3px solid var(--accent)}
+        .callout-warn{background:rgba(251,191,36,.06);border-left:3px solid var(--orange)}
+        [data-theme="light"] .callout-warn{background:#fffbeb}
+        .callout-success{background:var(--green-light);border-left:3px solid var(--green)}
+
+        /* CARDS */
+        .feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:20px 0}
+        .f-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:all .2s}
+        .f-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);border-color:var(--accent)}
+        .f-card .icon{font-size:1.5rem;margin-bottom:8px}
+        .f-card h4{font-size:.88rem;font-weight:600;margin-bottom:4px;color:var(--text)}
+        .f-card p{font-size:.78rem;color:var(--text-2);margin:0;line-height:1.5}
+
+        /* IMAGE */
+        .img-box{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin:20px 0;box-shadow:var(--shadow-sm)}
+        .img-box img{width:100%;border-radius:6px;display:block}
+        .img-cap{text-align:center;font-size:.78rem;color:var(--text-3);margin-top:10px;font-style:italic}
+
+        /* INSTALL */
+        .install-bar{display:flex;align-items:center;gap:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin:16px 0}
+        .install-bar code{background:transparent;font-size:.92rem;flex:1;color:var(--text);border:none;padding:0}
+        .install-bar .copy-btn{padding:5px 14px;font-size:.75rem}
+
+        /* PARAMS */
+        .params{margin:12px 0}
+        .params dt{font-family:var(--font-mono);font-size:.86rem;color:var(--accent);margin-top:10px}
+        .params dd{font-size:.86rem;color:var(--text-2);margin-left:20px;margin-bottom:4px}
+
+        /* AUTHORS */
+        .author-row{display:flex;gap:24px;flex-wrap:wrap;margin:20px 0}
+        .author-card{flex:1;min-width:240px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;transition:all .2s}
+        .author-card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+        .author-card h4{color:var(--accent);margin-bottom:2px;font-size:1.05rem}
+        .author-card .role{font-size:.8rem;color:var(--text-3);margin-bottom:10px;font-weight:500}
+        .author-card .email{font-size:.8rem;color:var(--text-2);margin-bottom:8px}
+        .author-links{display:flex;gap:10px;justify-content:center;margin-top:12px}
+        .author-links a{color:var(--text-2);text-decoration:none;font-size:.8rem;padding:4px 10px;border:1px solid var(--border);border-radius:5px;transition:all .15s;font-weight:500}
+        .author-links a:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-light)}
+
+        /* RESPONSIVE */
+        @media(max-width:1024px){
+            .sidebar{transform:translateX(-100%)}
+            .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-lg)}
+            .main{margin-left:0;padding:24px 20px 60px}
+            .mobile-toggle{display:block}
+        }
+        @media(max-width:640px){
+            .hero{padding:32px 20px}.hero h1{font-size:1.8rem}
+            .feature-grid{grid-template-columns:1fr}
+            .author-row{flex-direction:column}
         }
 
-        :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --bg-code: #f4f4f4;
-            --text-primary: #2c3e50;
-            --text-secondary: #5a6c7d;
-            --border-color: #e1e8ed;
-            --accent-primary: #3498db;
-            --accent-secondary: #2ecc71;
-            --shadow: 0 2px 8px rgba(0,0,0,0.1);
-            --sidebar-width: 280px;
-        }
+        .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:89}
+        .overlay.show{display:block}
 
-        [data-theme="dark"] {
-            --bg-primary: #1a1a2e;
-            --bg-secondary: #16213e;
-            --bg-code: #0f3460;
-            --text-primary: #eee;
-            --text-secondary: #b4b4b4;
-            --border-color: #2c3e50;
-            --accent-primary: #4a90e2;
-            --accent-secondary: #27ae60;
-            --shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--text-primary);
-            background: var(--bg-primary);
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .navbar {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: var(--shadow);
-        }
-
-        .nav-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--accent-primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .theme-toggle, .mobile-menu-btn {
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: transform 0.2s, background 0.3s;
-        }
-
-        .theme-toggle:hover, .mobile-menu-btn:hover {
-            transform: scale(1.05);
-            background: var(--accent-secondary);
-        }
-
-        .mobile-menu-btn {
-            display: none;
-        }
-
-        .layout {
-            display: flex;
-            margin-top: 70px;
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
-            position: fixed;
-            left: 0;
-            top: 70px;
-            bottom: 0;
-            overflow-y: auto;
-            padding: 2rem 0;
-            transition: transform 0.3s;
-            z-index: 999;
-        }
-
-        .sidebar-content {
-            padding: 0 1.5rem;
-        }
-
-        .sidebar h3 {
-            color: var(--accent-primary);
-            margin: 1.5rem 0 0.5rem;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .sidebar ul {
-            list-style: none;
-        }
-
-        .sidebar li {
-            margin: 0.3rem 0;
-        }
-
-        .sidebar a {
-            color: var(--text-primary);
-            text-decoration: none;
-            display: block;
-            padding: 0.5rem 0.8rem;
-            border-radius: 4px;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .sidebar a:hover, .sidebar a.active {
-            background: var(--accent-primary);
-            color: white;
-            padding-left: 1.2rem;
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 2rem;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .hero {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            padding: 3rem 2rem;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .hero h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto 2rem;
-        }
-
-        .badges {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            background: rgba(255,255,255,0.2);
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.85rem;
-        }
-
-        .section {
-            margin-bottom: 4rem;
-            scroll-margin-top: 90px;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--accent-primary);
-            border-bottom: 2px solid var(--accent-primary);
-            padding-bottom: 0.5rem;
-        }
-
-        .subsection-title {
-            font-size: 1.5rem;
-            margin: 2rem 0 1rem;
-            color: var(--accent-secondary);
-        }
-
-        .code-block {
-            background: var(--bg-code);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-            margin: 1rem 0;
-        }
-
-        .code-block pre {
-            margin: 0;
-            color: var(--text-primary);
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .image-container {
-            background: var(--bg-secondary);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin: 1.5rem 0;
-            box-shadow: var(--shadow);
-        }
-
-        .image-container img {
-            width: 100%;
-            height: auto;
-            border-radius: 4px;
-            display: block;
-        }
-
-        .image-caption {
-            margin-top: 0.8rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            text-align: center;
-            font-style: italic;
-        }
-
-        .install-box {
-            background: var(--accent-primary);
-            color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-            margin: 2rem 0;
-        }
-
-        .install-box h2 {
-            margin-bottom: 1rem;
-        }
-
-        .install-box code {
-            background: rgba(0,0,0,0.2);
-            padding: 0.8rem 1.5rem;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 1rem;
-            font-size: 1.1rem;
-            font-family: 'Courier New', monospace;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-
-        .feature-card {
-            background: var(--bg-secondary);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .feature-card h3 {
-            color: var(--accent-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .info-box {
-            background: var(--bg-secondary);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid var(--accent-primary);
-            margin: 1.5rem 0;
-        }
-
-        .warning-box {
-            background: var(--bg-secondary);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid #e74c3c;
-            margin: 1.5rem 0;
-        }
-
-        .api-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .api-table th,
-        .api-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .api-table th {
-            background: var(--accent-primary);
-            color: white;
-            font-weight: 600;
-        }
-
-        .api-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .authors {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            margin: 2rem 0;
-            flex-wrap: wrap;
-        }
-
-        .author-card {
-            text-align: center;
-            background: var(--bg-secondary);
-            padding: 2rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .author-card h4 {
-            color: var(--accent-primary);
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        @media (max-width: 1024px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            :root {
-                --sidebar-width: 260px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
-            .nav-content {
-                justify-content: center;
-            }
-        }
-
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
-        }
+        /* Footer */
+        .footer-section{text-align:center;padding:32px 0;border-top:1px solid var(--border)}
+        .footer-section p{color:var(--text-3);font-size:.85rem}
+        .footer-section a{color:var(--accent);text-decoration:none;font-weight:500}
+        .footer-section a:hover{text-decoration:underline}
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="logo">
-                📊 QuantResearch
-            </div>
-            <div class="nav-actions">
-                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰ Menu</button>
-                <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
-            </div>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a class="nav-logo" href="#home">📊 QuantResearch <span class="vtag">v2.5.3</span></a>
+        <div class="nav-right">
+            <a class="nav-link" href="https://github.com/vinayak1729-web/QuantR" target="_blank">GitHub</a>
+            <a class="nav-link" href="https://pypi.org/project/QuantResearch/" target="_blank">PyPI</a>
+            <button class="btn-sm btn-ghost" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme">☀️ Light</button>
+            <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
         </div>
-    </nav>
+    </div>
+</nav>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <div class="layout">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-content">
-                <h3>Getting Started</h3>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#installation">Installation</a></li>
-                    <li><a href="#quick-start">Quick Start</a></li>
-                    <li><a href="#features">Features</a></li>
-                </ul>
+<aside class="sidebar" id="sidebar">
+    <div class="sb-group"><div class="sb-label">Getting Started</div>
+        <a class="sb-link" href="#home">Overview</a>
+        <a class="sb-link" href="#installation">Installation</a>
+        <a class="sb-link" href="#quick-start">Quick Start</a>
+        <a class="sb-link" href="#features">Features</a>
+    </div>
+    <div class="sb-group"><div class="sb-label">API Reference</div>
+        <a class="sb-link" href="#fetch-data">fetch_data()</a>
+    </div>
+    <div class="sb-group"><div class="sb-label">Indicators</div>
+        <a class="sb-link" href="#rsi">RSI</a>
+        <a class="sb-link" href="#macd">MACD</a>
+        <a class="sb-link" href="#bollinger">Bollinger Bands</a>
+        <a class="sb-link" href="#atr">ATR</a>
+        <a class="sb-link" href="#sma">SMA</a>
+        <a class="sb-link" href="#ema">EMA</a>
+        <a class="sb-link" href="#dema-tema">DEMA &amp; TEMA</a>
+        <a class="sb-link" href="#rvwap">RVWAP</a>
+        <a class="sb-link" href="#stochastic">Stochastic</a>
+        <a class="sb-link" href="#williams">Williams %R</a>
+        <a class="sb-link" href="#obv">OBV</a>
+        <a class="sb-link" href="#psar">Parabolic SAR</a>
+        <a class="sb-link" href="#adx">ADX</a>
+        <a class="sb-link" href="#ichimoku">Ichimoku Cloud</a>
+        <a class="sb-link" href="#pivot">Pivot Points</a>
+        <a class="sb-link" href="#fibonacci">Fibonacci Levels</a>
+        <a class="sb-link" href="#slope">Slope</a>
+    </div>
+    <div class="sb-group"><div class="sb-label">Visualization</div>
+        <a class="sb-link" href="#plot-candlestick">Candlestick Chart</a>
+        <a class="sb-link" href="#plot-rsi">RSI Plot</a>
+        <a class="sb-link" href="#plot-macd">MACD Plot</a>
+        <a class="sb-link" href="#plot-bollinger">Bollinger Plot</a>
+        <a class="sb-link" href="#plot-ma">Moving Averages Plot</a>
+    </div>
+    <div class="sb-group"><div class="sb-label">QuantQL Backtesting</div>
+        <a class="sb-link" href="#quantql">Overview</a>
+        <a class="sb-link" href="#quantql-syntax">Language Syntax</a>
+        <a class="sb-link" href="#quantql-indicators">Supported Indicators</a>
+        <a class="sb-link" href="#quantql-operators">Condition Operators</a>
+        <a class="sb-link" href="#quantql-examples">Strategy Examples</a>
+        <a class="sb-link" href="#quantql-run">Running a Backtest</a>
+        <a class="sb-link" href="#quantql-metrics">Backtest Metrics</a>
+        <a class="sb-link" href="#quantql-export">Exporting Results</a>
+    </div>
+    <div class="sb-group"><div class="sb-label">Dashboard</div>
+        <a class="sb-link" href="#dashboard">Launch Dashboard</a>
+        <a class="sb-link" href="#dash-historical">Historical Tab</a>
+        <a class="sb-link" href="#dash-live">Live OHLC Tab</a>
+        <a class="sb-link" href="#dash-multi">Multi-Ticker Tab</a>
+        <a class="sb-link" href="#dash-watchlist">Watchlist Tab</a>
+        <a class="sb-link" href="#dash-backtest">Backtest Tab</a>
+        <a class="sb-link" href="#quant-metrics">Quant Metrics Panel</a>
+    </div>
+    <div class="sb-group"><div class="sb-label">More</div>
+        <a class="sb-link" href="#requirements">Requirements</a>
+        <a class="sb-link" href="#authors">Authors</a>
+        <a class="sb-link" href="#disclaimer">Disclaimer</a>
+    </div>
+</aside>
 
-                <h3>Data Fetching</h3>
-                <ul>
-                    <li><a href="#fetch-data">fetch_data()</a></li>
-                </ul>
+<main class="main">
 
-                <h3>Indicators</h3>
-                <ul>
-                    <li><a href="#rsi">RSI</a></li>
-                    <li><a href="#macd">MACD</a></li>
-                    <li><a href="#bollinger">Bollinger Bands</a></li>
-                    <li><a href="#atr">ATR</a></li>
-                    <li><a href="#sma">SMA</a></li>
-                    <li><a href="#ema">EMA</a></li>
-                    <li><a href="#dema-tema">DEMA & TEMA</a></li>
-                    <li><a href="#rvwap">RVWAP</a></li>
-                </ul>
+<!-- HERO -->
+<section id="home">
+    <div class="hero">
+        <h1>QuantResearch</h1>
+        <div class="ver">Version 2.5.3 — Professional Quantitative Analysis</div>
+        <p>A comprehensive Python library for technical indicator calculation, strategy backtesting via QuantQL, advanced candlestick visualization, and a full GUI dashboard — supporting NSE, BSE, US, and Crypto markets.</p>
+        <div class="badge-row">
+            <span class="badge">Python 3.7+</span>
+            <span class="badge">MIT License</span>
+            <span class="badge">18+ Indicators</span>
+            <span class="badge">QuantQL Backtest Engine</span>
+            <span class="badge">GUI Dashboard</span>
+            <span class="badge">🇮🇳 India + Global</span>
+        </div>
+    </div>
+</section>
 
-                <h3>Visualizations</h3>
-                <ul>
-                    <li><a href="#plot-candlestick">Candlestick Chart</a></li>
-                    <li><a href="#plot-rsi">RSI Plot</a></li>
-                    <li><a href="#plot-macd">MACD Plot</a></li>
-                    <li><a href="#plot-bollinger">Bollinger Plot</a></li>
-                    <li><a href="#plot-moving-avg">Moving Averages</a></li>
-                </ul>
+<!-- INSTALLATION -->
+<section id="installation">
+    <h2 class="sec-title">Installation</h2>
+    <p>Install from PyPI:</p>
+    <div class="install-bar">
+        <code>pip install QuantResearch</code>
+        <button class="copy-btn" onclick="copyText(this,'pip install QuantResearch')">📋 Copy</button>
+    </div>
+    <p>Or install from source:</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>git clone https://github.com/vinayak1729-web/QuantR.git
+cd QuantR
+pip install -e .</pre>
+    </div>
+</section>
 
-                <h3>Dashboard</h3>
-                <ul>
-                    <li><a href="#dashboard">Interactive Dashboard</a></li>
-                </ul>
+<!-- QUICK START -->
+<section id="quick-start">
+    <h2 class="sec-title">Quick Start</h2>
+    <p>Get up and running in under 5 minutes:</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, Rsi, plot_rsi
 
-                <h3>More</h3>
-                <ul>
-                    <li><a href="#requirements">Requirements</a></li>
-                    <li><a href="#authors">Authors</a></li>
-                    <li><a href="#disclaimer">Disclaimer</a></li>
-                </ul>
-            </div>
-        </aside>
+# Fetch stock data
+data = fetch_data("AAPL", start_date="2023-01-01", end_date="2024-01-01")
 
-        <main class="main-content">
-            <div class="container">
-                <section id="home" class="section">
-                    <div class="hero">
-                        <h1>QuantResearch</h1>
-                        <p>Professional Python library for quantitative financial analysis, technical indicators, and advanced trading visualization</p>
-                        <div class="badges">
-                            <span class="badge">Python 3.7+</span>
-                            <span class="badge">MIT License</span>
-                            <span class="badge">PyPI Available</span>
-                            <span class="badge">Production Ready</span>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="installation" class="section">
-                    <h2 class="section-title">📦 Installation</h2>
-                    <div class="install-box">
-                        <h2>Quick Installation</h2>
-                        <code>pip install QuantResearch</code>
-                    </div>
-                </section>
-
-                <section id="quick-start" class="section">
-                    <h2 class="section-title">🚀 Quick Start</h2>
-                    <p>Get started in less than 5 minutes with this simple example:</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, Rsi, plot_rsi
-
-# Step 1: Fetch stock data
-ticker = "AAPL"
-data = fetch_data(ticker, start_date="2023-01-01", end_date="2024-01-01")
-
-# Step 2: Calculate RSI
+# Calculate RSI
 rsi = Rsi(data['Close'], period=14)
 
-# Step 3: Visualize with candlestick chart
-plot_rsi(data=data, rsi=rsi, period=14, ticker=ticker, kind='candle')</pre>
-                    </div>
+# Visualize with candlestick chart
+plot_rsi(data=data, rsi=rsi, period=14, ticker="AAPL", kind='candle')</pre>
+    </div>
+    <div class="img-box">
+        <img src="static/rsi_candle.png" alt="RSI Candlestick Chart">
+        <div class="img-cap">RSI indicator with candlestick price chart — overbought/oversold levels highlighted</div>
+    </div>
 
-                    <div class="image-container">
-                        <img src="static/rsi_candle.png" alt="RSI with Candlestick Chart">
-                        <p class="image-caption">RSI indicator displayed with candlestick price chart showing overbought/oversold levels</p>
-                    </div>
-                </section>
+    <h3 class="sub-title">Launch the Dashboard</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.dashboard import launch_dashboard
+launch_dashboard()</pre>
+    </div>
 
-                <section id="features" class="section">
-                    <h2 class="section-title">✨ Key Features</h2>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <div class="feature-icon">📈</div>
-                            <h3>Technical Indicators</h3>
-                            <p>RSI, MACD, Bollinger Bands, ATR, SMA, EMA, DEMA, TEMA, and RVWAP</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🕯️</div>
-                            <h3>Candlestick Charts</h3>
-                            <p>Professional candlestick visualizations with customizable styling</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">📊</div>
-                            <h3>Data Fetching</h3>
-                            <p>Seamless Yahoo Finance integration for historical data</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🎨</div>
-                            <h3>Beautiful Visualizations</h3>
-                            <p>Dual-pane charts combining price action with indicators</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">⚡</div>
-                            <h3>Simple API</h3>
-                            <p>Intuitive functions for beginners and professionals</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🔧</div>
-                            <h3>Highly Customizable</h3>
-                            <p>Adjust periods, thresholds, and visualization styles</p>
-                        </div>
-                    </div>
-                </section>
+    <h3 class="sub-title">Run a Backtest with QuantQL</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.backtest_engine import run_backtest
 
-                <section id="fetch-data" class="section">
-                    <h2 class="section-title">📥 Data Fetching</h2>
-                    
-                    <h3 class="subsection-title">fetch_data(ticker, start_date, end_date)</h3>
-                    <p>Downloads historical OHLCV data from Yahoo Finance.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data
+result = run_backtest("""
+BACKTEST "RSI + MACD Strategy"
+MARKET NSE
+TICKER RELIANCE
+PERIOD 1Y
 
-ticker = "AAPL"
-data = fetch_data(ticker, "2023-01-01", "2024-01-01")
-print(data.head())</pre>
-                    </div>
+USE RSI(14)
+USE MACD(12, 26, 9)
 
-                    <table class="api-table">
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                        </tr>
-                        <tr>
-                            <td>ticker</td>
-                            <td>str</td>
-                            <td>Stock ticker symbol (e.g., "AAPL", "MSFT")</td>
-                        </tr>
-                        <tr>
-                            <td>start_date</td>
-                            <td>str</td>
-                            <td>Start date in "YYYY-MM-DD" format</td>
-                        </tr>
-                        <tr>
-                            <td>end_date</td>
-                            <td>str</td>
-                            <td>End date in "YYYY-MM-DD" format</td>
-                        </tr>
-                    </table>
+BUY  WHEN RSI > 30 AND MACD CROSSES_ABOVE SIGNAL
+SELL WHEN RSI > 70 OR MACD CROSSES_BELOW SIGNAL
 
-                    <div class="image-container">
-                        <img src="static/fetch_data.png" alt="Fetch Data Output">
-                        <p class="image-caption">Sample output of fetch_data() showing OHLCV data structure</p>
-                    </div>
-                </section>
+CAPITAL 100000
+STOP_LOSS 5%
+TAKE_PROFIT 15%
+COMMISSION 0.1%
+""")
 
-                <section id="rsi" class="section">
-                    <h2 class="section-title">📊 RSI - Relative Strength Index</h2>
-                    
-                    <h3 class="subsection-title">Rsi(price, period=14)</h3>
-                    <p>Momentum oscillator measuring the magnitude of recent price changes.</p>
-                    
-                    <div class="info-box">
-                        <strong>Interpretation:</strong>
-                        <ul style="margin: 0.5rem 0; padding-left: 2rem;">
-                            <li>RSI > 70 → Overbought (potential sell signal)</li>
-                            <li>RSI < 30 → Oversold (potential buy signal)</li>
-                            <li>30-70 → Neutral zone</li>
-                        </ul>
-                    </div>
+for key, val in result.metrics.items():
+    print(f"{key}: {val}")</pre>
+    </div>
+</section>
 
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, Rsi
+<!-- FEATURES -->
+<section id="features">
+    <h2 class="sec-title">Features</h2>
+    <div class="feature-grid">
+        <div class="f-card"><div class="icon">📊</div><h4>Data Fetching</h4><p>OHLCV from Yahoo Finance — NSE, BSE, US &amp; Crypto</p></div>
+        <div class="f-card"><div class="icon">📈</div><h4>18+ Indicators</h4><p>RSI, MACD, BB, ATR, Stochastic, ADX, Ichimoku, SAR, OBV, Fibonacci &amp; more</p></div>
+        <div class="f-card"><div class="icon">🧪</div><h4>QuantQL Engine</h4><p>Domain-specific backtesting language with full analytics</p></div>
+        <div class="f-card"><div class="icon">🕯️</div><h4>Candlestick Charts</h4><p>Professional dark-theme OHLC candlestick visualizations</p></div>
+        <div class="f-card"><div class="icon">🖥️</div><h4>GUI Dashboard</h4><p>5-tab Tkinter dashboard — Historical, Live, Multi-Ticker, Watchlist, Backtest</p></div>
+        <div class="f-card"><div class="icon">🇮🇳</div><h4>India + Global</h4><p>Auto-resolves NSE/BSE tickers, ₹/crore/lakh formatting, Nifty 50 defaults</p></div>
+        <div class="f-card"><div class="icon">📉</div><h4>Quant Metrics</h4><p>Sharpe, Sortino, Calmar, VaR, CVaR, Alpha, Beta, CAGR, Max Drawdown</p></div>
+        <div class="f-card"><div class="icon">🔔</div><h4>Signal Generation</h4><p>Automatic buy/sell crossover detection and trade markers</p></div>
+    </div>
+</section>
+
+<!-- DATA FETCHING -->
+<section id="fetch-data">
+    <h2 class="sec-title">Data Fetching</h2>
+    <h4 class="fn-sig">fetch_data(ticker, start_date, end_date)</h4>
+    <p>Downloads historical OHLCV (Open, High, Low, Close, Volume, Adjusted Close) data from Yahoo Finance. Supports NSE (<code>.NS</code>), BSE (<code>.BO</code>), US, and Crypto (e.g. <code>BTC-USD</code>) tickers.</p>
+    <div class="tbl-wrap"><table>
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>ticker</code></td><td>str</td><td>Stock ticker symbol — e.g. <code>"AAPL"</code>, <code>"RELIANCE.NS"</code>, <code>"BTC-USD"</code></td></tr>
+        <tr><td><code>start_date</code></td><td>str</td><td>Start date in <code>"YYYY-MM-DD"</code> format</td></tr>
+        <tr><td><code>end_date</code></td><td>str</td><td>End date in <code>"YYYY-MM-DD"</code> format</td></tr>
+    </table></div>
+    <p><strong>Returns:</strong> <code>pandas.DataFrame</code> with columns: Open, High, Low, Close, Adj Close, Volume</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data
+
+data = fetch_data("RELIANCE.NS", "2023-01-01", "2024-01-01")
+print(data.head())
+print(f"Shape: {data.shape}")</pre>
+    </div>
+    <div class="img-box"><img src="static/fetch_data.png" alt="Fetch Data Output"><div class="img-cap">Sample output of fetch_data() showing OHLCV data structure</div></div>
+</section>
+
+<!-- RSI -->
+<section id="rsi">
+    <h2 class="sec-title">RSI — Relative Strength Index</h2>
+    <h4 class="fn-sig">Rsi(price, period=14)</h4>
+    <p>Momentum oscillator measuring the magnitude of recent price changes. Returns values from 0 to 100.</p>
+    <dl class="params">
+        <dt>price</dt><dd><code>pandas.Series</code> — Price series (typically closing prices)</dd>
+        <dt>period</dt><dd><code>int</code> — Lookback period (default: 14)</dd>
+    </dl>
+    <div class="callout callout-info"><strong>Interpretation:</strong> RSI &gt; 70 → Overbought (potential sell) · RSI &lt; 30 → Oversold (potential buy) · 30–70 → Neutral</div>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, Rsi
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-data['rsi'] = Rsi(data['Close'], period=14)
+rsi = Rsi(data['Close'], period=14)
+print(f"Current RSI: {rsi.iloc[-1]:.2f}")</pre>
+    </div>
+    <div class="img-box"><img src="static/rsi_signals.png" alt="RSI Signals"><div class="img-cap">RSI indicator showing buy and sell signal zones</div></div>
+</section>
 
-# Generate signals
-oversold = data['rsi'] < 30  # Buy signal
-overbought = data['rsi'] > 70  # Sell signal
+<!-- MACD -->
+<section id="macd">
+    <h2 class="sec-title">MACD — Moving Average Convergence Divergence</h2>
+    <h4 class="fn-sig">macd(price, short_period=12, long_period=26, signal_period=9)</h4>
+    <p>Trend-following momentum indicator showing the relationship between two exponential moving averages.</p>
+    <dl class="params">
+        <dt>price</dt><dd><code>pandas.Series</code> — Price series</dd>
+        <dt>short_period</dt><dd><code>int</code> — Short EMA period (default: 12)</dd>
+        <dt>long_period</dt><dd><code>int</code> — Long EMA period (default: 26)</dd>
+        <dt>signal_period</dt><dd><code>int</code> — Signal line EMA period (default: 9)</dd>
+    </dl>
+    <p><strong>Returns:</strong> Tuple of <code>(macd_line, signal_line, histogram)</code></p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, macd, plot_macd
 
-print(f"Current RSI: {data['rsi'].iloc[-1]:.2f}")
-print(f"Buy signals: {oversold.sum()}")
-print(f"Sell signals: {overbought.sum()}")</pre>
-                    </div>
+data = fetch_data("TSLA", "2024-01-01", "2024-11-01")
+macd_line, signal_line, hist = macd(data['Close'])
 
-                    <div class="image-container">
-                        <img src="static/rsi_signals.png" alt="RSI Signals">
-                        <p class="image-caption">RSI indicator showing buy and sell signals</p>
-                    </div>
-                </section>
-
-                <section id="macd" class="section">
-                    <h2 class="section-title">📈 MACD - Moving Average Convergence Divergence</h2>
-                    
-                    <h3 class="subsection-title">macd(price, short_period=12, long_period=26, signal_period=9)</h3>
-                    <p>Trend-following momentum indicator that shows the relationship between two moving averages.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, macd
-
-data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-macd_line, signal_line, hist = macd(data['Adj Close'])
-
-# Detect crossovers
 bullish = (macd_line > signal_line) & (macd_line.shift(1) <= signal_line.shift(1))
-bearish = (macd_line < signal_line) & (macd_line.shift(1) >= signal_line.shift(1))
+print(f"Bullish crossovers: {bullish.sum()}")
 
-print(f"Bullish signals: {bullish.sum()}")
-print(f"Bearish signals: {bearish.sum()}")</pre>
-                    </div>
+plot_macd(macd_line, signal_line, hist, ticker="TSLA", data=data, kind='candle')</pre>
+    </div>
+    <div class="img-box"><img src="static/macd.png" alt="MACD"><div class="img-cap">MACD with signal line and histogram showing trend momentum</div></div>
+</section>
 
-                    <div class="image-container">
-                        <img src="static/macd.png" alt="MACD Indicator">
-                        <p class="image-caption">MACD with signal line and histogram showing trend strength</p>
-                    </div>
-                </section>
+<!-- BOLLINGER -->
+<section id="bollinger">
+    <h2 class="sec-title">Bollinger Bands</h2>
+    <h4 class="fn-sig">bb_bands(price, period=20, num_std=2)</h4>
+    <p>Volatility bands placed above and below a moving average. Useful for squeeze detection and overbought/oversold conditions.</p>
+    <dl class="params">
+        <dt>price</dt><dd><code>pandas.Series</code> — Price series</dd>
+        <dt>period</dt><dd><code>int</code> — Lookback period (default: 20)</dd>
+        <dt>num_std</dt><dd><code>int/float</code> — Number of standard deviations (default: 2)</dd>
+    </dl>
+    <p><strong>Returns:</strong> Tuple of <code>(upper_band, middle_band, lower_band)</code></p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, bb_bands, plot_bollinger
 
-                <section id="bollinger" class="section">
-                    <h2 class="section-title">📉 Bollinger Bands</h2>
-                    
-                    <h3 class="subsection-title">bb_bands(price, period=20, num_std=2)</h3>
-                    <p>Volatility bands placed above and below a moving average. Useful for identifying overbought/oversold conditions.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, bb_bands
+data = fetch_data("NVDA", "2023-01-01", "2024-01-01")
+upper, mid, lower = bb_bands(data['Close'], period=20, num_std=2)
 
-data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-upper, mid, lower = bb_bands(data['Adj Close'], period=20, num_std=2)
-
-data['bb_upper'] = upper
-data['bb_mid'] = mid
-data['bb_lower'] = lower
-
-# Calculate band width for squeeze detection
 band_width = (upper - lower) / mid
 squeeze = band_width < band_width.quantile(0.25)
-print(f"Squeeze periods detected: {squeeze.sum()}")</pre>
-                    </div>
+print(f"Squeeze periods: {squeeze.sum()}")
 
-                    <div class="image-container">
-                        <img src="static/bb_bands.png" alt="Bollinger Bands">
-                        <p class="image-caption">Bollinger Bands showing volatility zones around price movement</p>
-                    </div>
-                </section>
+plot_bollinger(data=data, adj_close=data['Close'], bb_upper=upper,
+               bb_mid=mid, bb_lower=lower, ticker="NVDA", kind='candle')</pre>
+    </div>
+    <div class="img-box"><img src="static/bb_bands.png" alt="Bollinger Bands"><div class="img-cap">Bollinger Bands showing volatility zones around price movement</div></div>
+</section>
 
-                <section id="atr" class="section">
-                    <h2 class="section-title">📏 ATR - Average True Range</h2>
-                    
-                    <h3 class="subsection-title">atr(data, period=14)</h3>
-                    <p>Volatility indicator that measures the average range of price movement.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, atr
-
-data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-data['atr'] = atr(data, period=14)
-
-print(f"Average ATR: {data['atr'].mean():.2f}")
-print(f"Current ATR: {data['atr'].iloc[-1]:.2f}")
-
-# Plot ATR
-data['atr'].plot(title=f'ATR for AAPL')</pre>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/atr.png" alt="ATR Indicator">
-                        <p class="image-caption">Average True Range showing market volatility over time</p>
-                    </div>
-                </section>
-
-                <section id="sma" class="section">
-                    <h2 class="section-title">📊 SMA - Simple Moving Average</h2>
-                    
-                    <h3 class="subsection-title">sma(price, period=9)</h3>
-                    <p>Average price over a specified period, useful for identifying trend direction.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, sma
+<!-- ATR -->
+<section id="atr">
+    <h2 class="sec-title">ATR — Average True Range</h2>
+    <h4 class="fn-sig">atr(data, period=14)</h4>
+    <p>Volatility indicator measuring the average range of price movement using Wilder's Smoothing.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, atr
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-data['sma_20'] = sma(data['Adj Close'], period=20)
-data['sma_50'] = sma(data['Adj Close'], period=50)
+atr_values = atr(data, period=14)
+print(f"Current ATR: {atr_values.iloc[-1]:.2f}")</pre>
+    </div>
+    <div class="img-box"><img src="static/atr.png" alt="ATR"><div class="img-cap">Average True Range showing market volatility over time</div></div>
+</section>
 
-# Golden Cross detection
-golden_cross = (data['sma_20'] > data['sma_50']) & (data['sma_20'].shift(1) <= data['sma_50'].shift(1))
+<!-- SMA -->
+<section id="sma">
+    <h2 class="sec-title">SMA — Simple Moving Average</h2>
+    <h4 class="fn-sig">sma(price, period=9)</h4>
+    <p>Average price over a specified period. Useful for identifying trend direction and support/resistance.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, sma
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+sma_20 = sma(data['Close'], period=20)
+sma_50 = sma(data['Close'], period=50)
+
+golden_cross = (sma_20 > sma_50) & (sma_20.shift(1) <= sma_50.shift(1))
 print(f"Golden Cross signals: {golden_cross.sum()}")</pre>
-                    </div>
+    </div>
+    <div class="img-box"><img src="static/sma.png" alt="SMA"><div class="img-cap">Simple Moving Average overlaid on candlestick chart</div></div>
+</section>
 
-                    <div class="image-container">
-                        <img src="static/sma.png" alt="SMA">
-                        <p class="image-caption">Simple Moving Average overlaid on candlestick chart</p>
-                    </div>
-                </section>
-
-                <section id="ema" class="section">
-                    <h2 class="section-title">📈 EMA - Exponential Moving Average</h2>
-                    
-                    <h3 class="subsection-title">ema(price, period=9)</h3>
-                    <p>Weighted average giving more importance to recent prices, more responsive than SMA.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, ema
+<!-- EMA -->
+<section id="ema">
+    <h2 class="sec-title">EMA — Exponential Moving Average</h2>
+    <h4 class="fn-sig">ema(price, period=9)</h4>
+    <p>Weighted average giving more importance to recent prices. More responsive than SMA with reduced lag.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, ema
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-data['ema_12'] = ema(data['Adj Close'], period=12)
-data['ema_26'] = ema(data['Adj Close'], period=26)
+ema_12 = ema(data['Close'], period=12)
+ema_26 = ema(data['Close'], period=26)
+print(f"EMA 12: {ema_12.iloc[-1]:.2f}  EMA 26: {ema_26.iloc[-1]:.2f}")</pre>
+    </div>
+    <div class="img-box"><img src="static/ema.png" alt="EMA"><div class="img-cap">Exponential Moving Average showing trend with less lag</div></div>
+</section>
 
-print(f"Current EMA 12: {data['ema_12'].iloc[-1]:.2f}")
-print(f"Current EMA 26: {data['ema_26'].iloc[-1]:.2f}")</pre>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/ema.png" alt="EMA">
-                        <p class="image-caption">Exponential Moving Average showing trend with less lag</p>
-                    </div>
-                </section>
-
-                <section id="dema-tema" class="section">
-                    <h2 class="section-title">📊 DEMA & TEMA</h2>
-                    
-                    <h3 class="subsection-title">demma(price, period=9) & temma(price, period=9)</h3>
-                    <p><strong>DEMA:</strong> Double Exponential Moving Average - smoother with reduced lag<br>
-                    <strong>TEMA:</strong> Triple Exponential Moving Average - smoothest with minimal lag</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, demma, temma
+<!-- DEMA & TEMA -->
+<section id="dema-tema">
+    <h2 class="sec-title">DEMA &amp; TEMA</h2>
+    <h4 class="fn-sig">demma(price, period=9)</h4>
+    <h4 class="fn-sig">temma(price, period=9)</h4>
+    <p><strong>DEMA</strong> (Double Exponential Moving Average) provides smoother trend indication with reduced lag. <strong>TEMA</strong> (Triple Exponential Moving Average) offers the smoothest output with minimal lag.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, demma, temma
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-data['dema'] = demma(data['Adj Close'], period=20)
-data['tema'] = temma(data['Adj Close'], period=20)
+dema_val = demma(data['Close'], period=20)
+tema_val = temma(data['Close'], period=20)</pre>
+    </div>
+    <div class="img-box"><img src="static/demma&temma.png" alt="DEMA & TEMA"><div class="img-cap">DEMA and TEMA comparison showing progressively reduced lag</div></div>
+</section>
 
-print("Advanced moving averages calculated successfully!")</pre>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/demma&temma.png" alt="DEMA & TEMA">
-                        <p class="image-caption">DEMA and TEMA comparison showing reduced lag in trend following</p>
-                    </div>
-                </section>
-
-                <section id="rvwap" class="section">
-                    <h2 class="section-title">💹 RVWAP - Rolling Volume-Weighted Average Price</h2>
-                    
-                    <h3 class="subsection-title">RVWAP(high, low, close, volume, period=20)</h3>
-                    <p>Price benchmark that reflects both volume and price data, useful for institutional trading levels.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, RVWAP
+<!-- RVWAP -->
+<section id="rvwap">
+    <h2 class="sec-title">RVWAP — Rolling Volume-Weighted Average Price</h2>
+    <h4 class="fn-sig">RVWAP(high, low, close, volume, period=20)</h4>
+    <p>Price benchmark reflecting both volume and price data — useful for identifying institutional trading levels.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, RVWAP
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-data['rvwap'] = RVWAP(data['High'], data['Low'], data['Close'], 
-                      data['Volume'], period=20)
+vwap = RVWAP(data['High'], data['Low'], data['Close'], data['Volume'], period=20)
+print(f"Current RVWAP: {vwap.iloc[-1]:.2f}")</pre>
+    </div>
+    <div class="img-box"><img src="static/rvwap.png" alt="RVWAP"><div class="img-cap">Rolling VWAP showing volume-weighted price levels</div></div>
+</section>
 
-print(f"Current RVWAP: {data['rvwap'].iloc[-1]:.2f}")</pre>
-                    </div>
+<!-- STOCHASTIC -->
+<section id="stochastic">
+    <h2 class="sec-title">Stochastic Oscillator</h2>
+    <h4 class="fn-sig">stochastic(data, k_period=14, d_period=3)</h4>
+    <p>Momentum indicator comparing the closing price to the high-low range over a lookback period.</p>
+    <p><strong>Returns:</strong> Tuple of <code>(%K series, %D series)</code></p>
+    <div class="callout callout-info"><strong>Interpretation:</strong> %K &gt; 80 → Overbought · %K &lt; 20 → Oversold · %K crosses above %D → Bullish · %K crosses below %D → Bearish</div>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, stochastic
 
-                    <div class="image-container">
-                        <img src="static/rvwap.png" alt="RVWAP">
-                        <p class="image-caption">Rolling VWAP showing volume-weighted price levels</p>
-                    </div>
-                </section>
+data = fetch_data("TCS.NS", "2023-01-01", "2024-01-01")
+k, d = stochastic(data, k_period=14, d_period=3)
+print(f"Stoch %K: {k.iloc[-1]:.2f}  %D: {d.iloc[-1]:.2f}")</pre>
+    </div>
+</section>
 
-                <section id="plot-candlestick" class="section">
-                    <h2 class="section-title">🕯️ Candlestick Chart Visualization</h2>
-                    
-                    <h3 class="subsection-title">plot_candlestick(data, ticker='Stock')</h3>
-                    <p>Creates professional candlestick charts showing OHLC price action.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, plot_candlestick
+<!-- WILLIAMS %R -->
+<section id="williams">
+    <h2 class="sec-title">Williams %R</h2>
+    <h4 class="fn-sig">williams_r(data, period=14)</h4>
+    <p>Momentum indicator showing overbought/oversold conditions on an inverted 0 to −100 scale.</p>
+    <div class="callout callout-info"><strong>Interpretation:</strong> %R &gt; −20 → Overbought · %R &lt; −80 → Oversold</div>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, williams_r
+
+data = fetch_data("INFY.NS", "2023-01-01", "2024-01-01")
+wr = williams_r(data, period=14)
+print(f"Williams %R: {wr.iloc[-1]:.2f}")</pre>
+    </div>
+</section>
+
+<!-- OBV -->
+<section id="obv">
+    <h2 class="sec-title">OBV — On-Balance Volume</h2>
+    <h4 class="fn-sig">obv(data)</h4>
+    <p>Cumulative volume-based momentum indicator. Adds volume on up-days and subtracts on down-days — useful for confirming trends via volume flow.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, obv
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+obv_series = obv(data)</pre>
+    </div>
+</section>
+
+<!-- PARABOLIC SAR -->
+<section id="psar">
+    <h2 class="sec-title">Parabolic SAR</h2>
+    <h4 class="fn-sig">parabolic_sar(data, af_start=0.02, af_step=0.02, af_max=0.2)</h4>
+    <p>Trend-following indicator used to identify potential price reversals and trail stops.</p>
+    <p><strong>Returns:</strong> Tuple of <code>(sar_series, trend_series)</code> — trend is <code>1</code> (uptrend) or <code>-1</code> (downtrend)</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, parabolic_sar
+
+data = fetch_data("RELIANCE.NS", "2023-01-01", "2024-01-01")
+sar, trend = parabolic_sar(data)
+print(f"SAR: {sar.iloc[-1]:.2f}  Trend: {'UP' if trend.iloc[-1] == 1 else 'DOWN'}")</pre>
+    </div>
+</section>
+
+<!-- ADX -->
+<section id="adx">
+    <h2 class="sec-title">ADX — Average Directional Index</h2>
+    <h4 class="fn-sig">adx(data, period=14)</h4>
+    <p>Measures trend strength regardless of direction, along with +DI and −DI directional indicators.</p>
+    <p><strong>Returns:</strong> Tuple of <code>(adx_series, plus_di_series, minus_di_series)</code></p>
+    <div class="callout callout-info"><strong>Interpretation:</strong> ADX &gt; 25 → Strong trend · ADX &lt; 20 → Weak/no trend · +DI &gt; −DI → Bullish · −DI &gt; +DI → Bearish</div>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, adx
+
+data = fetch_data("TCS.NS", "2023-01-01", "2024-01-01")
+adx_val, plus_di, minus_di = adx(data, period=14)
+print(f"ADX: {adx_val.iloc[-1]:.2f}  +DI: {plus_di.iloc[-1]:.2f}  -DI: {minus_di.iloc[-1]:.2f}")</pre>
+    </div>
+</section>
+
+<!-- ICHIMOKU -->
+<section id="ichimoku">
+    <h2 class="sec-title">Ichimoku Cloud</h2>
+    <h4 class="fn-sig">ichimoku(data, tenkan=9, kijun=26, senkou_b=52)</h4>
+    <p>Comprehensive multi-component indicator showing support/resistance, trend direction, and momentum simultaneously.</p>
+    <p><strong>Returns:</strong> Tuple of <code>(tenkan_sen, kijun_sen, senkou_a, senkou_b_line, chikou_span)</code></p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, ichimoku
+
+data = fetch_data("HDFCBANK.NS", "2023-01-01", "2024-01-01")
+tenkan, kijun, senkou_a, senkou_b, chikou = ichimoku(data)</pre>
+    </div>
+</section>
+
+<!-- PIVOT POINTS -->
+<section id="pivot">
+    <h2 class="sec-title">Pivot Points</h2>
+    <h4 class="fn-sig">pivot_points(data)</h4>
+    <p>Classic Pivot Points — calculates support and resistance levels from the last completed bar's High, Low, and Close.</p>
+    <p><strong>Returns:</strong> <code>dict</code> with keys: <code>P</code>, <code>R1</code>, <code>R2</code>, <code>R3</code>, <code>S1</code>, <code>S2</code>, <code>S3</code></p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, pivot_points
+
+data = fetch_data("SBIN.NS", "2023-01-01", "2024-01-01")
+pp = pivot_points(data)
+print(f"Pivot: {pp['P']:.2f}  R1: {pp['R1']:.2f}  S1: {pp['S1']:.2f}")</pre>
+    </div>
+</section>
+
+<!-- FIBONACCI -->
+<section id="fibonacci">
+    <h2 class="sec-title">Fibonacci Retracement Levels</h2>
+    <h4 class="fn-sig">fibonacci_levels(data)</h4>
+    <p>Calculates 7 standard Fibonacci retracement levels across the dataset's high-low range.</p>
+    <p><strong>Returns:</strong> <code>dict</code> with keys: <code>'0%'</code>, <code>'23.6%'</code>, <code>'38.2%'</code>, <code>'50%'</code>, <code>'61.8%'</code>, <code>'78.6%'</code>, <code>'100%'</code></p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, fibonacci_levels
+
+data = fetch_data("RELIANCE.NS", "2023-01-01", "2024-01-01")
+fib = fibonacci_levels(data)
+for level, price in fib.items():
+    print(f"Fib {level}: {price:.2f}")</pre>
+    </div>
+</section>
+
+<!-- SLOPE -->
+<section id="slope">
+    <h2 class="sec-title">Slope — Linear Regression Slope</h2>
+    <h4 class="fn-sig">slope(series, period=14)</h4>
+    <p>Calculates the normalized trend slope as <code>(slope / mean_price) × 100</code> (percentage per bar) — useful for quantifying trend momentum.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.indicators import fetch_data, slope
+
+data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
+slp = slope(data['Close'], period=14)</pre>
+    </div>
+</section>
+
+<!-- VISUALIZATION -->
+<section id="plot-candlestick">
+    <h2 class="sec-title">Candlestick Chart</h2>
+    <h4 class="fn-sig">plot_candlestick(data, ticker='Stock')</h4>
+    <p>Creates professional dark-theme candlestick charts showing OHLC price action. All visualization functions support <code>kind='line'</code> (default) and <code>kind='candle'</code>.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, plot_candlestick
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
 plot_candlestick(data, ticker="AAPL")</pre>
-                    </div>
+    </div>
+    <div class="img-box"><img src="static/plot_candle_stick.png" alt="Candlestick"><div class="img-cap">Candlestick chart with green (bullish) and red (bearish) candles</div></div>
+</section>
 
-                    <div class="image-container">
-                        <img src="static/plot_candle_stick.png" alt="Candlestick Chart">
-                        <p class="image-caption">Clean candlestick chart showing price action with green (bullish) and red (bearish) candles</p>
-                    </div>
-                </section>
-
-                <section id="plot-rsi" class="section">
-                    <h2 class="section-title">📊 RSI Visualization</h2>
-                    
-                    <h3 class="subsection-title">plot_rsi(data, rsi, period=14, ticker, kind='line')</h3>
-                    <p>Visualize RSI with optional candlestick chart. Supports both line and candle chart types.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, Rsi, plot_rsi
+<section id="plot-rsi">
+    <h2 class="sec-title">RSI Visualization</h2>
+    <h4 class="fn-sig">plot_rsi(data, rsi, period=14, lower=30, upper=70, ticker, kind='line')</h4>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, Rsi, plot_rsi
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
 rsi = Rsi(data['Close'], period=14)
 
-# Line chart
 plot_rsi(rsi=rsi, period=14, ticker="AAPL", kind='line')
-
-# Candlestick chart with RSI
 plot_rsi(data=data, rsi=rsi, period=14, ticker="AAPL", kind='candle')</pre>
-                    </div>
+    </div>
+    <div class="img-box"><img src="static/rsi_line.png" alt="RSI Line"><div class="img-cap">RSI line chart with overbought/oversold levels</div></div>
+    <div class="img-box"><img src="static/rsi_candle.png" alt="RSI Candle"><div class="img-cap">Dual-pane: candlestick price chart with RSI below</div></div>
+</section>
 
-                    <div class="image-container">
-                        <img src="static/rsi_line.png" alt="RSI Line Chart">
-                        <p class="image-caption">RSI line chart with overbought (70) and oversold (30) levels highlighted</p>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/rsi_candle.png" alt="RSI Candlestick Chart">
-                        <p class="image-caption">Dual-pane view: Candlestick price chart above with RSI indicator below</p>
-                    </div>
-                </section>
-
-                <section id="plot-macd" class="section">
-                    <h2 class="section-title">📈 MACD Visualization</h2>
-                    
-                    <h3 class="subsection-title">plot_macd(macd_line, signal_line, histogram, ticker, data, kind='line')</h3>
-                    <p>Display MACD indicator with signal line and histogram, optionally with price chart.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, macd, plot_macd
+<section id="plot-macd">
+    <h2 class="sec-title">MACD Visualization</h2>
+    <h4 class="fn-sig">plot_macd(macd_line, signal_line, histogram, ticker, data, kind='line')</h4>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, macd, plot_macd
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-macd_line, signal_line, hist = macd(data['Adj Close'])
+macd_line, signal_line, hist = macd(data['Close'])
+plot_macd(macd_line, signal_line, hist, ticker="AAPL", data=data, kind='candle')</pre>
+    </div>
+    <div class="img-box"><img src="static/macd.png" alt="MACD"><div class="img-cap">MACD with signal line and histogram on candlestick chart</div></div>
+</section>
 
-# Candlestick chart with MACD
-plot_macd(macd_line, signal_line, hist, ticker="AAPL", 
-          data=data, kind='candle')</pre>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/macd.png" alt="MACD">
-                        <p class="image-caption">MACD with price action: Blue MACD line, orange signal line, and histogram showing momentum</p>
-                    </div>
-                </section>
-
-                <section id="plot-bollinger" class="section">
-                    <h2 class="section-title">📉 Bollinger Bands Visualization</h2>
-                    
-                    <h3 class="subsection-title">plot_bollinger(data, adj_close, bb_upper, bb_mid, bb_lower, ticker, kind='line')</h3>
-                    <p>Visualize Bollinger Bands with price, showing volatility zones.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, bb_bands, plot_bollinger
+<section id="plot-bollinger">
+    <h2 class="sec-title">Bollinger Bands Visualization</h2>
+    <h4 class="fn-sig">plot_bollinger(data, adj_close, bb_upper, bb_mid, bb_lower, ticker, kind='line')</h4>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, bb_bands, plot_bollinger
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-upper, mid, lower = bb_bands(data['Adj Close'], period=20)
+upper, mid, lower = bb_bands(data['Close'], period=20)
 
-# Line chart
-plot_bollinger(adj_close=data['Adj Close'], bb_upper=upper, 
+plot_bollinger(adj_close=data['Close'], bb_upper=upper,
                bb_mid=mid, bb_lower=lower, ticker="AAPL")
+plot_bollinger(data=data, adj_close=data['Close'], bb_upper=upper,
+               bb_mid=mid, bb_lower=lower, ticker="AAPL", kind='candle')</pre>
+    </div>
+    <div class="img-box"><img src="static/bb_bands_line_plot.png" alt="BB Line"><div class="img-cap">Bollinger Bands line chart with shaded volatility zone</div></div>
+    <div class="img-box"><img src="static/bb_bands_candle_plot.png" alt="BB Candle"><div class="img-cap">Bollinger Bands on candlestick chart</div></div>
+</section>
 
-# Candlestick chart
-plot_bollinger(data=data, adj_close=data['Adj Close'], 
-               bb_upper=upper, bb_mid=mid, bb_lower=lower, 
-               ticker="AAPL", kind='candle')</pre>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/bb_bands_line_plot.png" alt="Bollinger Bands Line">
-                        <p class="image-caption">Bollinger Bands line chart with shaded volatility zone</p>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/bb_bands_candle_plot.png" alt="Bollinger Bands Candlestick">
-                        <p class="image-caption">Bollinger Bands on candlestick chart showing price touching bands</p>
-                    </div>
-                </section>
-
-                <section id="plot-moving-avg" class="section">
-                    <h2 class="section-title">📊 Moving Averages Visualization</h2>
-                    
-                    <h3 class="subsection-title">plot_moving_averages(data, price, sma_val, ema_val, dema_val, tema_val, ticker, kind='line')</h3>
-                    <p>Compare multiple moving averages on a single chart.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch import fetch_data, sma, ema, demma, temma
-from QuantResearch import plot_moving_averages
+<section id="plot-ma">
+    <h2 class="sec-title">Moving Averages Visualization</h2>
+    <h4 class="fn-sig">plot_moving_averages(data, price, sma_val, ema_val, dema_val, tema_val, ticker, kind='line')</h4>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch import fetch_data, sma, ema, demma, temma, plot_moving_averages
 
 data = fetch_data("AAPL", "2023-01-01", "2024-01-01")
-data['sma'] = sma(data['Adj Close'], period=20)
-data['ema'] = ema(data['Adj Close'], period=20)
-data['dema'] = demma(data['Adj Close'], period=20)
-data['tema'] = temma(data['Adj Close'], period=20)
+plot_moving_averages(data=data, sma_val=sma(data['Close'], 20),
+                     ema_val=ema(data['Close'], 20),
+                     dema_val=demma(data['Close'], 20),
+                     tema_val=temma(data['Close'], 20),
+                     ticker="AAPL", kind='candle')</pre>
+    </div>
+    <div class="img-box"><img src="static/all_ma.png" alt="Moving Averages"><div class="img-cap">SMA, EMA, DEMA, TEMA compared on candlestick chart</div></div>
+</section>
 
-# Candlestick with all moving averages
-plot_moving_averages(data=data, sma_val=data['sma'], 
-                     ema_val=data['ema'], dema_val=data['dema'],
-                     tema_val=data['tema'], ticker="AAPL", kind='candle')</pre>
-                    </div>
+<!-- QUANTQL -->
+<section id="quantql">
+    <h2 class="sec-title">QuantQL — Backtesting Language</h2>
+    <p>QuantQL is a domain-specific language built into QuantResearch that lets you write trading strategies in plain, readable syntax and backtest them against real historical data. The engine handles data fetching, indicator computation, trade simulation, stop-loss/take-profit, commission/slippage, equity curve tracking, and full performance metrics.</p>
+</section>
 
-                    <div class="image-container">
-                        <img src="static/all_ma.png" alt="Moving Averages">
-                        <p class="image-caption">Multiple moving averages (SMA, EMA, DEMA, TEMA) compared on candlestick chart</p>
-                    </div>
-                </section>
+<section id="quantql-syntax">
+    <h3 class="sub-title">Language Syntax</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">quantql</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>BACKTEST "&lt;Strategy Name&gt;"
+MARKET &lt;NSE | BSE | US | CRYPTO | Auto&gt;
+TICKER &lt;SYMBOL&gt;
+PERIOD &lt;1Y | 6M | 3M | 30D | 2W | ...&gt;
 
-                <section id="dashboard" class="section">
-                    <h2 class="section-title">🎛️ Interactive Dashboard</h2>
-                    
-                    <h3 class="subsection-title">launch_dashboard()</h3>
-                    <p>Launch an interactive dashboard with all indicators and real-time analysis tools.</p>
-                    
-                    <div class="code-block">
-                        <pre>from QuantResearch.dashboard import launch_dashboard
+USE &lt;INDICATOR&gt;(&lt;params&gt;)
 
-# Launch the interactive dashboard
-launch_dashboard()</pre>
-                    </div>
+BUY  WHEN &lt;condition&gt;
+SELL WHEN &lt;condition&gt;
 
-                    <div class="image-container">
-                        <img src="static/dashboard_1.png" alt="Dashboard 1">
-                        <p class="image-caption">Dashboard interface - Main view with ticker input and date selection</p>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/dashboard_2.png" alt="Dashboard 2">
-                        <p class="image-caption">Dashboard - Indicator selection panel</p>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/dashboard_with_ma_lines.png" alt="Dashboard MA">
-                        <p class="image-caption">Dashboard displaying multiple moving average lines on price chart</p>
-                    </div>
-
-                    <div class="image-container">
-                        <img src="static/complete_dashbord_wilth_all_indicators.png" alt="Complete Dashboard">
-                        <p class="image-caption">Complete dashboard view with all technical indicators displayed simultaneously</p>
-                    </div>
-                </section>
-
-                <section id="requirements" class="section">
-                    <h2 class="section-title">📋 Requirements</h2>
-                    <table class="api-table">
-                        <tr>
-                            <th>Package</th>
-                            <th>Version</th>
-                            <th>Purpose</th>
-                        </tr>
-                        <tr>
-                            <td>Python</td>
-                            <td>>= 3.7</td>
-                            <td>Runtime environment</td>
-                        </tr>
-                        <tr>
-                            <td>pandas</td>
-                            <td>>= 1.3.0</td>
-                            <td>Data manipulation and analysis</td>
-                        </tr>
-                        <tr>
-                            <td>yfinance</td>
-                            <td>>= 0.2.0</td>
-                            <td>Financial data retrieval from Yahoo Finance</td>
-                        </tr>
-                        <tr>
-                            <td>matplotlib</td>
-                            <td>>= 3.4.0</td>
-                            <td>Plotting and visualization</td>
-                        </tr>
-                        <tr>
-                            <td>numpy</td>
-                            <td>>= 1.19.0</td>
-                            <td>Numerical computations</td>
-                        </tr>
-                    </table>
-                </section>
-
-                <section id="authors" class="section">
-                    <h2 class="section-title">👥 Authors</h2>
-                    <div class="authors">
-                        <div class="author-card">
-                            <h4>Vinayak Shinde</h4>
-                            <p><strong>Lead Developer</strong></p>
-                            <p style="color: var(--text-secondary); margin: 0.5rem 0;">vinayak.r.shinde.1729@gmail.com</p>
-                            <p><a href="https://github.com/vinayak1729-web" style="color: var(--accent-primary); text-decoration: none;">@vinayak1729-web</a></p>
-                        </div>
-                        <div class="author-card">
-                            <h4>Vishal Mishra</h4>
-                            <p><strong>Co-Developer</strong></p>
-                            <p style="color: var(--text-secondary); margin: 0.5rem 0;">vishal214.mishra@gmail.com</p>
-                            <p><a href="https://github.com/vishalmishra369" style="color: var(--accent-primary); text-decoration: none;">@vishalmishra369</a></p>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="disclaimer" class="section">
-                    <h2 class="section-title">⚠️ Disclaimer</h2>
-                    <div class="warning-box">
-                        <p><strong>Important:</strong> QuantResearch is provided for <strong>educational and research purposes only</strong>. It is <strong>not intended as financial advice</strong>.</p>
-                        <ul style="margin: 1rem 0; padding-left: 2rem;">
-                            <li>Always consult with a qualified financial advisor before making investment decisions</li>
-                            <li>Past performance does not guarantee future results</li>
-                            <li>Technical indicators are tools and should not be used as sole decision-making factors</li>
-                            <li>Use proper risk management in all trading activities</li>
-                            <li>Test strategies thoroughly before live trading</li>
-                        </ul>
-                    </div>
-                </section>
-
-                <section class="section" style="text-align: center; padding: 3rem 0;">
-                    <p style="font-size: 1.2rem; color: var(--text-secondary);">
-                        📄 Licensed under <strong>MIT License</strong><br>
-                        🔗 <a href="https://github.com/vinayak1729-web/QuantR" style="color: var(--accent-primary);">GitHub Repository</a> | 
-                        <a href="https://pypi.org/project/QuantResearch/" style="color: var(--accent-primary);">PyPI Package</a>
-                    </p>
-                    <p style="margin-top: 1.5rem; font-size: 1.1rem;">
-                        Made with ❤️ by Vinayak Shinde and Vishal Mishra
-                    </p>
-                </section>
-            </div>
-        </main>
+CAPITAL &lt;amount&gt;
+POSITION_SIZE &lt;percent&gt;%
+STOP_LOSS &lt;percent&gt;%
+TAKE_PROFIT &lt;percent&gt;%
+COMMISSION &lt;percent&gt;%
+SLIPPAGE &lt;percent&gt;%</pre>
     </div>
 
-    <script>
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+    <h3 class="sub-title">Keyword Reference</h3>
+    <div class="tbl-wrap"><table>
+        <tr><th>Keyword</th><th>Description</th><th>Example</th></tr>
+        <tr><td><code>BACKTEST</code></td><td>Strategy name (quoted string)</td><td><code>BACKTEST "My Strategy"</code></td></tr>
+        <tr><td><code>MARKET</code></td><td>Exchange/market selector</td><td><code>MARKET NSE</code></td></tr>
+        <tr><td><code>TICKER</code></td><td>Asset symbol</td><td><code>TICKER RELIANCE</code></td></tr>
+        <tr><td><code>PERIOD</code></td><td>Historical lookback</td><td><code>PERIOD 1Y</code></td></tr>
+        <tr><td><code>USE</code></td><td>Declare an indicator</td><td><code>USE RSI(14)</code></td></tr>
+        <tr><td><code>BUY WHEN</code></td><td>Entry condition</td><td><code>BUY WHEN RSI &lt; 30</code></td></tr>
+        <tr><td><code>SELL WHEN</code></td><td>Exit condition</td><td><code>SELL WHEN RSI &gt; 70</code></td></tr>
+        <tr><td><code>CAPITAL</code></td><td>Starting capital</td><td><code>CAPITAL 100000</code></td></tr>
+        <tr><td><code>STOP_LOSS</code></td><td>Stop-loss %</td><td><code>STOP_LOSS 5%</code></td></tr>
+        <tr><td><code>TAKE_PROFIT</code></td><td>Take-profit %</td><td><code>TAKE_PROFIT 15%</code></td></tr>
+        <tr><td><code>COMMISSION</code></td><td>Per-trade commission</td><td><code>COMMISSION 0.1%</code></td></tr>
+        <tr><td><code>SLIPPAGE</code></td><td>Per-trade slippage</td><td><code>SLIPPAGE 0.05%</code></td></tr>
+    </table></div>
+
+    <h3 class="sub-title">Period &amp; Market Formats</h3>
+    <div class="tbl-wrap"><table>
+        <tr><th>Period</th><th>Meaning</th><th style="border-left:1px solid var(--border)">Market</th><th>Description</th></tr>
+        <tr><td><code>1Y</code></td><td>1 year</td><td style="border-left:1px solid var(--border)"><code>NSE</code></td><td>Indian NSE → <code>.NS</code></td></tr>
+        <tr><td><code>6M</code></td><td>6 months</td><td style="border-left:1px solid var(--border)"><code>BSE</code></td><td>Indian BSE → <code>.BO</code></td></tr>
+        <tr><td><code>3M</code></td><td>3 months</td><td style="border-left:1px solid var(--border)"><code>US</code></td><td>US markets</td></tr>
+        <tr><td><code>2W</code></td><td>2 weeks</td><td style="border-left:1px solid var(--border)"><code>CRYPTO</code></td><td>Crypto → <code>-USD</code></td></tr>
+        <tr><td><code>30D</code></td><td>30 days</td><td style="border-left:1px solid var(--border)"><code>Auto</code></td><td>Auto-detect NSE</td></tr>
+    </table></div>
+</section>
+
+<section id="quantql-indicators">
+    <h3 class="sub-title">Supported Indicators in QuantQL</h3>
+    <div class="tbl-wrap"><table>
+        <tr><th><code>USE</code> Declaration</th><th>Available Names in Conditions</th></tr>
+        <tr><td><code>USE RSI(14)</code></td><td><code>RSI</code></td></tr>
+        <tr><td><code>USE MACD(12, 26, 9)</code></td><td><code>MACD</code>, <code>SIGNAL</code>, <code>HISTOGRAM</code></td></tr>
+        <tr><td><code>USE SMA(20)</code></td><td><code>SMA</code></td></tr>
+        <tr><td><code>USE EMA(20)</code></td><td><code>EMA</code></td></tr>
+        <tr><td><code>USE DEMA(20)</code></td><td><code>DEMA</code></td></tr>
+        <tr><td><code>USE TEMA(20)</code></td><td><code>TEMA</code></td></tr>
+        <tr><td><code>USE BB(20)</code></td><td><code>BB_UPPER</code>, <code>BB_MID</code>, <code>BB_LOWER</code></td></tr>
+        <tr><td><code>USE ATR(14)</code></td><td><code>ATR</code></td></tr>
+        <tr><td><code>USE STOCH(14, 3)</code></td><td><code>STOCH_K</code>, <code>STOCH_D</code></td></tr>
+        <tr><td><code>USE WILLIAMS(14)</code></td><td><code>WILLIAMS</code></td></tr>
+        <tr><td><code>USE ADX(14)</code></td><td><code>ADX</code>, <code>PLUS_DI</code>, <code>MINUS_DI</code></td></tr>
+        <tr><td><code>USE SLOPE(14)</code></td><td><code>SLOPE</code></td></tr>
+        <tr><td><code>USE SAR</code></td><td><code>SAR</code>, <code>SAR_TREND</code></td></tr>
+        <tr><td><code>USE OBV</code></td><td><code>OBV</code></td></tr>
+        <tr><td><code>USE VWAP(20)</code></td><td><code>VWAP</code></td></tr>
+    </table></div>
+    <p><strong>Price primitives</strong> (no <code>USE</code> needed): <code>CLOSE</code>, <code>OPEN</code>, <code>HIGH</code>, <code>LOW</code>, <code>VOLUME</code></p>
+</section>
+
+<section id="quantql-operators">
+    <h3 class="sub-title">Condition Operators</h3>
+    <div class="tbl-wrap"><table>
+        <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+        <tr><td><code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code></td><td>Comparison</td><td><code>RSI &gt; 70</code></td></tr>
+        <tr><td><code>==</code> <code>!=</code></td><td>Equality</td><td><code>SAR_TREND == 1</code></td></tr>
+        <tr><td><code>CROSSES_ABOVE</code></td><td>Crossover upward</td><td><code>MACD CROSSES_ABOVE SIGNAL</code></td></tr>
+        <tr><td><code>CROSSES_BELOW</code></td><td>Crossover downward</td><td><code>EMA CROSSES_BELOW SMA(50)</code></td></tr>
+        <tr><td><code>AND</code> <code>OR</code> <code>NOT</code></td><td>Logical</td><td><code>RSI &gt; 30 AND ADX &gt; 25</code></td></tr>
+    </table></div>
+    <p>Conditions can be grouped with parentheses:</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">quantql</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>BUY WHEN (RSI &lt; 35 AND CLOSE &lt; BB_LOWER) OR STOCH_K CROSSES_ABOVE STOCH_D</pre>
+    </div>
+</section>
+
+<section id="quantql-examples">
+    <h3 class="sub-title">Strategy Examples</h3>
+
+    <h3 class="sub-title" style="font-size:.95rem">RSI + MACD Crossover (NSE)</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">quantql</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>BACKTEST "RSI + MACD Crossover"
+MARKET NSE
+TICKER MARUTI
+PERIOD 1Y
+
+USE RSI(14)
+USE MACD(12, 26, 9)
+
+BUY  WHEN RSI > 30 AND MACD CROSSES_ABOVE SIGNAL
+SELL WHEN RSI > 70 OR MACD CROSSES_BELOW SIGNAL
+
+CAPITAL 100000
+STOP_LOSS 5%
+TAKE_PROFIT 15%
+COMMISSION 0.1%</pre>
+    </div>
+
+    <h3 class="sub-title" style="font-size:.95rem">Bollinger Bounce (NSE)</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">quantql</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>BACKTEST "Bollinger Bounce"
+MARKET NSE
+TICKER RELIANCE
+PERIOD 6M
+
+USE BB(20)
+USE RSI(14)
+
+BUY  WHEN CLOSE &lt; BB_LOWER AND RSI &lt; 35
+SELL WHEN CLOSE &gt; BB_MID OR RSI &gt; 65
+
+CAPITAL 500000
+STOP_LOSS 3%
+TAKE_PROFIT 10%
+COMMISSION 0.1%</pre>
+    </div>
+
+    <h3 class="sub-title" style="font-size:.95rem">SMA Trend + ADX Filter (US)</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">quantql</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>BACKTEST "SMA Trend Follow"
+MARKET US
+TICKER AAPL
+PERIOD 2Y
+
+USE SMA(50)
+USE EMA(20)
+USE ADX(14)
+
+BUY  WHEN CLOSE > SMA(50) AND EMA > SMA(50) AND ADX > 25
+SELL WHEN CLOSE &lt; SMA(50)
+
+CAPITAL 50000
+STOP_LOSS 7%
+TAKE_PROFIT 20%
+COMMISSION 0.05%</pre>
+    </div>
+
+    <h3 class="sub-title" style="font-size:.95rem">Crypto Momentum (BTC)</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">quantql</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>BACKTEST "BTC Momentum"
+MARKET CRYPTO
+TICKER BTC
+PERIOD 6M
+
+USE EMA(20)
+USE SMA(50)
+USE RSI(14)
+
+BUY  WHEN EMA > SMA(50) AND RSI > 45
+SELL WHEN EMA CROSSES_BELOW SMA(50) OR RSI > 80
+
+CAPITAL 50000
+STOP_LOSS 8%
+TAKE_PROFIT 25%
+COMMISSION 0.2%</pre>
+    </div>
+</section>
+
+<section id="quantql-run">
+    <h3 class="sub-title">Running a Backtest</h3>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.backtest_engine import compile_strategy, run_backtest, BacktestEngine
+
+# Option 1 — run directly from script string
+result = run_backtest(my_strategy_script)
+
+# Option 2 — compile then run separately
+strategy = compile_strategy(my_strategy_script)
+engine   = BacktestEngine(strategy)
+result   = engine.run()
+
+# Access results
+print(result.metrics)       # dict of performance metrics
+print(result.trades)        # list of Trade objects
+print(result.equity_curve)  # pandas.Series
+print(result.indicators)    # dict of computed indicator Series
+print(result.data)          # pandas.DataFrame of OHLCV data</pre>
+    </div>
+    <p>Or launch the standalone backtest GUI:</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.backtest_engine import backtest_dashboard
+backtest_dashboard()</pre>
+    </div>
+</section>
+
+<section id="quantql-metrics">
+    <h3 class="sub-title">Backtest Metrics</h3>
+    <p>After simulation, <code>result.metrics</code> contains:</p>
+    <div class="tbl-wrap"><table>
+        <tr><th>Metric</th><th>Description</th></tr>
+        <tr><td>Total Trades</td><td>Number of completed trades</td></tr>
+        <tr><td>Winners / Losers</td><td>Count of profitable and losing trades</td></tr>
+        <tr><td>Win Rate</td><td>Percentage of winning trades</td></tr>
+        <tr><td>Net P&amp;L</td><td>Total profit/loss after commission</td></tr>
+        <tr><td>Total Return</td><td>Percentage return over the period</td></tr>
+        <tr><td>Gross Profit / Loss</td><td>Sum of all winning / losing trade P&amp;L</td></tr>
+        <tr><td>Profit Factor</td><td>Gross Profit / |Gross Loss|</td></tr>
+        <tr><td>Avg Win / Avg Loss</td><td>Average profit/loss per trade</td></tr>
+        <tr><td>Max Consec Wins/Losses</td><td>Longest consecutive streaks</td></tr>
+        <tr><td>Avg Hold (days)</td><td>Average trade holding period</td></tr>
+        <tr><td>Sharpe Ratio</td><td>Risk-adjusted return (rf = 6.5%)</td></tr>
+        <tr><td>Max Drawdown</td><td>Largest peak-to-trough equity decline</td></tr>
+        <tr><td>Volatility</td><td>Annualised std dev of daily returns</td></tr>
+        <tr><td>Starting Capital / Final Equity</td><td>Initial and ending portfolio value</td></tr>
+    </table></div>
+</section>
+
+<section id="quantql-export">
+    <h3 class="sub-title">Exporting Results</h3>
+    <div class="callout callout-success"><strong>Export CSV</strong> — saves strategy parameters, all metrics, complete trade log, and equity curve with daily returns.</div>
+    <div class="callout callout-success"><strong>Export PNG</strong> — saves the backtest chart (price + trade markers, equity curve, indicators) as a 150 DPI image.</div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+    <h2 class="sec-title">QuantResearch Dashboard</h2>
+    <p>A full-featured GUI built with Tkinter and Matplotlib supporting India (NSE/BSE) and global (US/Crypto) markets with automatic ticker resolution, professional dark-theme charts, real-time live data, and a persistent watchlist.</p>
+    <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">📋 Copy</button></div>
+        <pre>from QuantResearch.dashboard import launch_dashboard
+launch_dashboard()</pre>
+    </div>
+    <div class="img-box"><img src="static/DASHBOARD.png" alt="Dashboard"><div class="img-cap">Dashboard interface — main view with ticker input, date selection, and all technical indicators</div></div>
+</section>
+
+<section id="dash-historical">
+    <h3 class="sub-title">Tab 1 — Historical</h3>
+    <p>The main analysis tab. Enter any ticker and select a timeframe to fetch and chart historical OHLCV data with any combination of indicators overlaid.</p>
+    <p><strong>Market Selector:</strong> Auto, NSE, BSE, US, or Crypto. In Auto mode, known Indian NSE tickers resolve automatically (e.g. <code>RELIANCE</code> → <code>RELIANCE.NS</code> with ₹ formatting).</p>
+    <p><strong>Timeframe Buttons:</strong> 1M, 3M, 6M, 9M, 1Y, 3Y, 5Y — each auto-adjusts indicator periods via adaptive settings.</p>
+    <p><strong>Overlays:</strong> Volume bars, VWAP, Volume Profile (configurable bins 10–200), Benchmark comparison (^NSEI, ^BSESN, ^NSEBANK, SPY, QQQ, BTC-USD, GLD, or custom).</p>
+    <p><strong>Available Indicators:</strong> All 18+ indicators with adjustable period spinboxes. Fibonacci custom date range supported.</p>
+    <p><strong>Export:</strong> PNG image, CSV data export, and Quant Metrics panel toggle.</p>
+    <div class="img-box"><img src="static/dashboard_with_ma_lines.png" alt="Dashboard MA"><div class="img-cap">Dashboard displaying multiple moving average lines</div></div>
+</section>
+
+<section id="dash-live">
+    <h3 class="sub-title">Tab 2 — Live OHLC</h3>
+    <p>Live market data streaming via Yahoo Finance WebSocket. Displays real-time OHLC candlestick charts with optional RSI, MACD, Bollinger Bands, Stochastic, Volume, SMA, and EMA overlays. Supports configurable resample intervals (e.g. 1min, 5min) and price alerts.</p>
+    <div class="img-box"><img src="static/live_websocket.png" alt="Live OHLC"><div class="img-cap">Live OHLC tab with real-time WebSocket data streaming</div></div>
+</section>
+
+<section id="dash-multi">
+    <h3 class="sub-title">Tab 3 — Multi-Ticker</h3>
+    <p>Fetch and display multiple tickers side by side in a scrollable multi-chart view. Each sub-chart independently shows price with optional RSI, MACD, ATR, Stochastic, and ADX indicator panels.</p>
+    <div class="img-box"><img src="static/multi_ticker.png" alt="Multi-Ticker"><div class="img-cap">Multi-ticker comparison view with independent indicator panels</div></div>
+</section>
+
+<section id="dash-watchlist">
+    <h3 class="sub-title">Tab 4 — Watchlist</h3>
+    <p>A persistent watchlist stored in <code>~/.quant_watchlist.json</code>. Shows live price, % change, 52-week high/low, and exchange for each ticker.</p>
+    <p><strong>Features:</strong> Refresh Prices (background thread), Add Nifty 50 Defaults (top 10: RELIANCE.NS, TCS.NS, INFY.NS, etc.), Chart button (jump to Historical tab), and remove ticker.</p>
+    <div class="img-box"><img src="static/watchlist.png" alt="Watchlist"><div class="img-cap">Persistent watchlist with live prices and quick-chart access</div></div>
+</section>
+
+<section id="dash-backtest">
+    <h3 class="sub-title">Tab 5 — Backtest (QuantQL)</h3>
+    <p>Write and run QuantQL strategy scripts directly inside the dashboard. Includes a built-in code editor with 5 example strategies, visual trade book with buy/sell markers, equity curve panel, sub-indicator panels, full metrics table, trade log table, and CSV/PNG export.</p>
+    <div class="img-box"><img src="static/backtest_engine_QLang.png" alt="Backtest Tab"><div class="img-cap">Backtest tab with QuantQL editor, equity curve, and trade markers</div></div>
+</section>
+
+<section id="quant-metrics">
+    <h3 class="sub-title">Quant Metrics Panel</h3>
+    <p>Toggle with the <strong>📈 Metrics</strong> button in the Historical tab. Computes institutional-grade performance statistics with optional benchmarking:</p>
+    <div class="tbl-wrap"><table>
+        <tr><th>Metric</th><th>Description</th></tr>
+        <tr><td>Total Return</td><td>Cumulative price return over the loaded period</td></tr>
+        <tr><td>CAGR</td><td>Compound Annual Growth Rate</td></tr>
+        <tr><td>Volatility</td><td>Annualised standard deviation (252-day basis)</td></tr>
+        <tr><td>Sharpe</td><td>Risk-adjusted return (rf = 6.5%)</td></tr>
+        <tr><td>Sortino</td><td>Downside risk-adjusted return</td></tr>
+        <tr><td>Max Drawdown</td><td>Largest peak-to-trough equity decline</td></tr>
+        <tr><td>Calmar</td><td>CAGR / |Max Drawdown|</td></tr>
+        <tr><td>VaR 95%</td><td>Value at Risk at 95% confidence</td></tr>
+        <tr><td>CVaR 95%</td><td>Conditional VaR (Expected Shortfall)</td></tr>
+        <tr><td>Win Rate</td><td>Frequency of positive daily returns</td></tr>
+        <tr><td>Profit Factor</td><td>Avg daily gain / avg daily loss</td></tr>
+        <tr><td>Beta</td><td>Systematic risk vs selected benchmark</td></tr>
+        <tr><td>Alpha (ann)</td><td>Annualised excess return vs benchmark</td></tr>
+        <tr><td>Correlation</td><td>Return correlation with benchmark</td></tr>
+        <tr><td>Bars</td><td>Total trading days in the dataset</td></tr>
+    </table></div>
+    <p>Values are color-coded: <span style="color:#34d399">green = strong</span>, <span style="color:#fbbf24">gold = neutral</span>, <span style="color:#f87171">red = weak</span>, <span style="color:#22d3ee">cyan = informational</span>.</p>
+</section>
+
+<!-- MORE -->
+<section id="requirements">
+    <h2 class="sec-title">Requirements</h2>
+    <div class="tbl-wrap"><table>
+        <tr><th>Package</th><th>Version</th><th>Purpose</th></tr>
+        <tr><td>Python</td><td>&gt;= 3.7</td><td>Runtime environment</td></tr>
+        <tr><td>pandas</td><td>&gt;= 1.3.0</td><td>Data manipulation</td></tr>
+        <tr><td>yfinance</td><td>&gt;= 0.2.0</td><td>Financial data retrieval</td></tr>
+        <tr><td>matplotlib</td><td>&gt;= 3.4.0</td><td>Visualization</td></tr>
+        <tr><td>numpy</td><td>&gt;= 1.19.0</td><td>Numerical computations</td></tr>
+        <tr><td>tkinter</td><td>(stdlib)</td><td>GUI dashboard</td></tr>
+        <tr><td>tkcalendar</td><td>&gt;= 1.6.0</td><td>Date pickers in dashboard</td></tr>
+    </table></div>
+</section>
+
+<section id="authors">
+    <h2 class="sec-title">Authors</h2>
+    <div class="author-row">
+        <div class="author-card">
+            <h4>Vinayak Shinde</h4>
+            <div class="role">Lead Developer</div>
+            <p class="email">vinayak.r.shinde.1729@gmail.com</p>
+            <div class="author-links">
+                <a href="https://github.com/vinayak1729-web" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/vinayak-shinde-4428a3257/" target="_blank">LinkedIn</a>
+            </div>
+        </div>
+        <div class="author-card">
+            <h4>Vishal Mishra</h4>
+            <div class="role">Co-Developer</div>
+            <p class="email">vishal214.mishra@gmail.com</p>
+            <div class="author-links">
+                <a href="https://github.com/vishalmishra369" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/vishal-mishra-970a57248/" target="_blank">LinkedIn</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="disclaimer">
+    <h2 class="sec-title">Disclaimer</h2>
+    <div class="callout callout-warn">
+        <p><strong>Important:</strong> QuantResearch is provided for <strong>educational and research purposes only</strong>. It is not intended as financial advice.</p>
+        <p style="margin-top:8px">Always consult with a qualified financial advisor before making investment decisions. Past performance does not guarantee future results. Technical indicators are tools — they should not be used as sole decision-making factors. Use proper risk management and test strategies thoroughly before live trading. Backtest results are simulated and do not account for all real-world trading conditions.</p>
+    </div>
+</section>
+
+<section class="footer-section">
+    <p>Licensed under MIT · <a href="https://github.com/vinayak1729-web/QuantR">GitHub</a> · <a href="https://pypi.org/project/QuantResearch/">PyPI</a></p>
+    <p style="margin-top:12px;font-size:.92rem;color:var(--text-2)">Made with ❤️ by Vinayak Shinde and Vishal Mishra</p>
+</section>
+
+</main>
+
+<script>
+// Theme
+function toggleTheme(){
+    const d=document.documentElement,b=document.getElementById('themeBtn');
+    if(d.getAttribute('data-theme')==='dark'){d.setAttribute('data-theme','light');b.textContent='🌙 Dark'}
+    else{d.setAttribute('data-theme','dark');b.textContent='☀️ Light'}
+}
+// Sidebar
+function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+}
+// Copy code from code-block
+function copyCode(btn){
+    const pre=btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(()=>{
+        btn.classList.add('copied');btn.textContent='✓ Copied!';
+        setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 Copy'},1800);
+    });
+}
+// Copy arbitrary text
+function copyText(btn,text){
+    navigator.clipboard.writeText(text).then(()=>{
+        btn.classList.add('copied');btn.textContent='✓ Copied!';
+        setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 Copy'},1800);
+    });
+}
+// Active link tracking
+const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+        if(e.isIntersecting){
+            document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+            const a=document.querySelector('.sb-link[href="#'+e.target.id+'"]');
+            if(a)a.classList.add('active');
         }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');
-        }
-
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-
-        // Highlight active section in sidebar
-        function updateActiveLink() {
-            const sections = document.querySelectorAll('.section');
-            const navLinks = document.querySelectorAll('.sidebar a');
-            
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (window.pageYOffset >= sectionTop - 100) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === '#' + current) {
-                    link.classList.add('active');
-                }
-            });
-        }
-
-        window.addEventListener('scroll', updateActiveLink);
-        window.addEventListener('load', updateActiveLink);
-
-        // Close sidebar on mobile when link is clicked
-        document.querySelectorAll('.sidebar a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 1024) {
-                    document.getElementById('sidebar').classList.remove('open');
-                }
-            });
-        });
-    </script>
+    });
+},{rootMargin:'-80px 0px -60% 0px',threshold:0});
+document.querySelectorAll('main>section[id]').forEach(s=>obs.observe(s));
+// Close sidebar on mobile
+document.querySelectorAll('.sb-link').forEach(l=>l.addEventListener('click',()=>{
+    if(window.innerWidth<=1024){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
+}));
+</script>
 </body>
 </html>
